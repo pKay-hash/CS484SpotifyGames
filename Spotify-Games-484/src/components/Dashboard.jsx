@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import HigherOrLower from './HigherOrLower';
+
 
 const Dashboard = ({ token }) => {
   const [user, setUser] = useState(null);
+  const [currentGame, setCurrentGame] = useState(null);
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -21,6 +25,15 @@ const Dashboard = ({ token }) => {
     fetchUserData();
   }, [token]);
 
+  const renderGame = () => {
+    switch(currentGame) {
+      case 'higherOrLower':
+        return <HigherOrLower token={token} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div>
       <h2>Dashboard</h2>
@@ -30,7 +43,8 @@ const Dashboard = ({ token }) => {
           <h3>Available Games:</h3>
           <ul>
             <li>Guess the Song</li>
-            <li>Higher or Lower</li>
+            <li>          <button onClick={() => setCurrentGame('higherOrLower')}>Higher or Lower</button>
+            </li>
             <li>Guess the Musician</li>
             <li>Lyric Quiz</li>
           </ul>
@@ -38,6 +52,7 @@ const Dashboard = ({ token }) => {
       ) : (
         <p>Loading user data...</p>
       )}
+      {renderGame()}
     </div>
   );
 };
