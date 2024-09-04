@@ -16,7 +16,7 @@ const Dashboard = ({ token }) => {
             Authorization: `Bearer ${token}`
           }
         });
-        setUser(response.data);
+        setUser(response.data); //sets user to response from api call to get user
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -25,6 +25,7 @@ const Dashboard = ({ token }) => {
     fetchUserData();
   }, [token]);
 
+  //game renderer
   const renderGame = () => {
     switch(currentGame) {
       case 'higherOrLower':
@@ -43,8 +44,7 @@ const Dashboard = ({ token }) => {
           <h3>Available Games:</h3>
           <ul>
             <li>Guess the Song</li>
-            <li>          <button onClick={() => setCurrentGame('higherOrLower')}>Higher or Lower</button>
-            </li>
+            <li><button onClick={() => setCurrentGame('higherOrLower')}>Higher or Lower</button></li>
             <li>Guess the Musician</li>
             <li>Lyric Quiz</li>
           </ul>
