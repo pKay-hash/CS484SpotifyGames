@@ -29,9 +29,9 @@ const App = () => {
   };
 
   return (
-    <div className="App">
+    <div className="App bg-neutral-900">
       <header className="App-header">
-        <h1>Spotify Game App</h1>
+        <h1 className="text-center text-blue-500">Spotify Game App</h1>
         {token && <button onClick={logout}>Logout</button>}
       </header>
       

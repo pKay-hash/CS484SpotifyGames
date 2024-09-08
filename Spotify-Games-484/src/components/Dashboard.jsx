@@ -42,12 +42,12 @@ const Dashboard = ({ token }) => {
         <div>
           <p>Welcome, {user.display_name}!</p>
           <h3>Available Games:</h3>
-          <ul>
-            <li>Guess the Song</li>
-            <li><button onClick={() => setCurrentGame('higherOrLower')}>Higher or Lower</button></li>
-            <li>Guess the Musician</li>
-            <li>Lyric Quiz</li>
-          </ul>
+          <div className="">
+            <button onClick={() => setCurrentGame('guessTheSong')}>Guess the Song</button>
+            <button onClick={() => setCurrentGame('higherOrLower')}>Higher or Lower</button>
+            <button onClick={() => setCurrentGame('guessTheMusician')}>Guess the Musician</button>
+            <button onClick={() => setCurrentGame('lyricQuiz')}>Lyric Quiz</button>
+          </div>
         </div>
       ) : (
         <p>Loading user data...</p>

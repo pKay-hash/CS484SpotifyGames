@@ -34,7 +34,7 @@ const HigherOrLower = ({ token }) => {
     const [artist1, artist2] = currentPair;
     const rank1 = artists.indexOf(artist1);
     const rank2 = artists.indexOf(artist2);
-    artists.map((artist) => {console.log(artist.name)});
+    //artists.map((artist) => {console.log(artist.name)});
     const isCorrect = (guess === 'higher' && rank2 < rank1) ||
                       (guess === 'lower' && rank2 > rank1);
 
