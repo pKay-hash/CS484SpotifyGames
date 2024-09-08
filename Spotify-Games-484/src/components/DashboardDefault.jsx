@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const HigherOrLower = ({ token }) => {
+const DashboardDefault = ({ token }) => {
   const [artists, setArtists] = useState([]);
   const [currentPair, setCurrentPair] = useState([]);
   const [score, setScore] = useState(0);
@@ -73,4 +73,4 @@ const HigherOrLower = ({ token }) => {
 };
 
 
-export default HigherOrLower;
+export default DashboardDefault;
