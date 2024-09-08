@@ -1,8 +1,8 @@
 import React from 'react';
 
-
-const AUTH_URL = "https://accounts.spotify.com/authorize?client_id=8d028dc7fb1741a5affeae86686969fe&response_type=token&redirect_uri=https://cs484spotifygames.pages.dev//&scope=user-read-private%20user-read-email%20user-top-read%20user-library-read%20playlist-read-private%20user-read-recently-played";
-
+const clientId = import.meta.env.VITE_CLIENT_ID || '8d028dc7fb1741a5affeae86686969fe';
+const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/';
+const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(clientId)}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user-read-private%20user-read-email%20user-top-read%20user-library-read%20playlist-read-private%20user-read-recently-played`;
 const Login = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center font-sans bg-gray-900 text-white p-6">
