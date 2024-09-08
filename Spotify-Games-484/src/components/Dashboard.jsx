@@ -67,7 +67,7 @@ const Dashboard = ({ token }) => {
           </div>
         </div>
       </div>
-      <div className="flex-grow p-6 overflow-auto">
+      <div className="flex-grow p-6">
         {renderGame()}
       </div>
     </div>
