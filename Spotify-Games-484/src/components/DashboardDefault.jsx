@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const DashboardDefault = ({ token }) => {
+const DashboardDefault = ({ token, timeRange }) => {
   const [topTracks, setTopTracks] = useState([]);
   const [topArtists, setTopArtists] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
@@ -12,15 +12,16 @@ const DashboardDefault = ({ token }) => {
 
   useEffect(() => {
     const fetchUserData = async () => {
+      setLoading(true);
       try {
         const [tracksResponse, artistsResponse] = await Promise.all([
           axios.get('https://api.spotify.com/v1/me/top/tracks', {
             headers: { 'Authorization': `Bearer ${token}` },
-            params: { limit: 50, time_range: 'long_term' }
+            params: { limit: 50, time_range: timeRange }
           }),
           axios.get('https://api.spotify.com/v1/me/top/artists', {
             headers: { 'Authorization': `Bearer ${token}` },
-            params: { limit: 5, time_range: 'long_term' }
+            params: { limit: 5, time_range: timeRange }
           })
         ]);
 
@@ -80,7 +81,7 @@ const DashboardDefault = ({ token }) => {
     };
 
     fetchUserData();
-  }, [token]);
+  }, [token, timeRange]);
 
   if (loading) {
     return <div className="text-center mt-20 text-xl">Loading your personalized dashboard...</div>;
@@ -88,8 +89,14 @@ const DashboardDefault = ({ token }) => {
 
   const genreColors = ['bg-pink-500', 'bg-purple-500', 'bg-indigo-500'];
 
+  const timeRangeText = {
+    short_term: 'this month',
+    medium_term: 'in the last 6 months',
+    long_term: 'in the last year'
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto p-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
         <h3 className="text-2xl font-semibold mb-4 text-blue-400">Your Top Tracks</h3>
         <ul className="space-y-4">
@@ -147,10 +154,10 @@ const DashboardDefault = ({ token }) => {
         <h3 className="text-2xl font-semibold mb-4 text-red-400">Your Favorite Music Era</h3>
         <div className="space-y-2">
           <p className="text-lg">
-            You love music from the <span className="text-yellow-400 font-bold">{favoriteMusic.decade}s</span>!
+            {timeRangeText[timeRange]}, you loved music from the <span className="text-yellow-400 font-bold">{favoriteMusic.decade}s</span>!
           </p>
           <p className="text-md text-gray-400">
-            Your top tracks are mostly from {favoriteMusic.year}.
+            Your top tracks were mostly from {favoriteMusic.year}.
           </p>
         </div>
       </div>

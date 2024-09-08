@@ -3,9 +3,10 @@ import axios from 'axios';
 import HigherOrLower from './HigherOrLower';
 import DashboardDefault from './DashboardDefault';
 
-const Dashboard = ({ token }) => {
+const Dashboard = ({ token, onLogout }) => {
   const [user, setUser] = useState(null);
   const [currentGame, setCurrentGame] = useState(null);
+  const [timeRange, setTimeRange] = useState('medium_term');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -27,10 +28,14 @@ const Dashboard = ({ token }) => {
   const renderGame = () => {
     switch(currentGame) {
       case 'higherOrLower':
-        return <HigherOrLower token={token} />;
+        return <HigherOrLower token={token} timeRange={timeRange} />;
       default:
-        return <DashboardDefault token={token}/>;
+        return <DashboardDefault token={token} timeRange={timeRange} />;
     }
+  };
+
+  const handleTimeRangeChange = (event) => {
+    setTimeRange(event.target.value);
   };
 
   return (
@@ -39,6 +44,15 @@ const Dashboard = ({ token }) => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <h2 className="text-xl font-semibold">Welcome, {user?.display_name || 'User'}</h2>
           <div className="space-x-2">
+            <select 
+              value={timeRange} 
+              onChange={handleTimeRangeChange}
+              className="bg-gray-700 text-white rounded-md px-2 py-1 text-sm"
+            >
+              <option value="short_term">1 Month</option>
+              <option value="medium_term">6 Months</option>
+              <option value="long_term">1 Year</option>
+            </select>
             <button 
               className="px-3 py-1 text-sm font-medium bg-gray-700 rounded-full border border-transparent hover:bg-gray-600 hover:text-gray-300 hover:border-blue-400 transition duration-300"
               onClick={() => setCurrentGame('Dashboard')}>
