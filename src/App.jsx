@@ -51,7 +51,7 @@ const App = () => {
               </button>
             </div>
           </header>
-          <Dashboard token={token} />
+          <Dashboard token={token} onLogout={logout} />
         </>
       )}
     </div>

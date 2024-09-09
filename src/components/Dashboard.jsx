@@ -9,10 +9,13 @@ const Dashboard = ({ token, onLogout }) => {
   const [user, setUser] = useState(null);
   const [currentGame, setCurrentGame] = useState(null);
   const [timeRange, setTimeRange] = useState('medium_term');
+  const [loading, setLoading] = useState(true);
+
 
   // Fetch user data when the component mounts, setting user state with the response from the API call to the user's profile.
   useEffect(() => {
     const fetchUserData = async () => {
+      setLoading(true);
       try {
         const response = await axios.get('https://api.spotify.com/v1/me', {
           headers: {
@@ -20,13 +23,16 @@ const Dashboard = ({ token, onLogout }) => {
           }
         });
         setUser(response.data);
+        setLoading(false);
+
       } catch (error) {
         console.error('Error fetching user data:', error);
+        onLogout(); //if there is no user data, just logout
       }
     };
 
     fetchUserData();
-  }, [token]);
+  }, [token, onLogout]);
 
   // Render the game component based on the currentGame state.
   const renderGame = () => {
@@ -44,6 +50,12 @@ const Dashboard = ({ token, onLogout }) => {
   const handleTimeRangeChange = (event) => {
     setTimeRange(event.target.value);
   };
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">
+      <p className="text-white text-xl">Loading...</p>
+    </div>;
+  }
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">

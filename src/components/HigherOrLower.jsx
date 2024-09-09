@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const HigherOrLower = ({ token }) => {
+const HigherOrLower = ({ token, timeRange }) => {
   const [artists, setArtists] = useState([]);
   const [currentPair, setCurrentPair] = useState([]);
   const [score, setScore] = useState(0);
@@ -12,14 +12,13 @@ const HigherOrLower = ({ token }) => {
 
   useEffect(() => {
     fetchTopArtists();
-  }, []);
+  }, [token, timeRange]);
 
   const fetchTopArtists = async () => {
-    //TODO this always uses time_range of long_term, gotta make sure this is being passed in as a prop.
     try {
       const response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
         headers: { 'Authorization': `Bearer ${token}` },
-        params: { time_range: 'long_term', limit: 50 }
+        params: { time_range: timeRange, limit: 50 }
       });
       setArtists(response.data.items);
       selectNewPair(response.data.items);
