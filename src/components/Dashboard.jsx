@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import HigherOrLower from './HigherOrLower';
 import DashboardDefault from './DashboardDefault';
+import GuessTheSong from './GuessTheSong';
 
 const Dashboard = ({ token, onLogout }) => {
   const [user, setUser] = useState(null);
@@ -29,6 +30,8 @@ const Dashboard = ({ token, onLogout }) => {
     switch(currentGame) {
       case 'higherOrLower':
         return <HigherOrLower token={token} timeRange={timeRange} />;
+      case 'guessTheSong':
+        return <GuessTheSong token={token} timeRange={timeRange} />;
       default:
         return <DashboardDefault token={token} timeRange={timeRange} />;
     }

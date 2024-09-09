@@ -4,8 +4,10 @@ A website that allows users to sign in with their Spotify account, giving them a
 
 ## How to run:
 
-npm install
-npm install axios
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-npm run dev
+npm install  
+npm install axios  
+npm install -D tailwindcss postcss autoprefixer  
+npx tailwindcss init -p  
+npm run dev   
+  
+## Also available at **cs484spotifygames.pages.dev**
