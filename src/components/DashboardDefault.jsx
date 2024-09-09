@@ -1,3 +1,5 @@
+// Used as the default page before any game is selected, showing general data about the user's listening habits.
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -6,41 +8,48 @@ const DashboardDefault = ({ token, timeRange }) => {
   const [topArtists, setTopArtists] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
   const [favoriteGenres, setFavoriteGenres] = useState([]);
-  const [favoriteMusic, setFavoriteMusic] = useState({ year: null, decade: null });
+  const [favoriteMusic, setFavoriteMusic] = useState({ year: null, decade: null }); //shows the user's favorite decade of music
   const [mostListenedAlbum, setMostListenedAlbum] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  //fetches various kinds of data from Spotify API
   useEffect(() => {
     const fetchUserData = async () => {
       setLoading(true);
+      //favorite Tracks and Artists
       try {
+        //gets 50, as all 50 will be used for different calculations (such as favoriteMusic state), 
+        //but we only need 5 to physically display on the DashboardDefault component.
         const [tracksResponse, artistsResponse] = await Promise.all([
           axios.get('https://api.spotify.com/v1/me/top/tracks', {
             headers: { 'Authorization': `Bearer ${token}` },
             params: { limit: 50, time_range: timeRange }
           }),
+          //we will only need 5 for the 
           axios.get('https://api.spotify.com/v1/me/top/artists', {
             headers: { 'Authorization': `Bearer ${token}` },
             params: { limit: 5, time_range: timeRange }
           })
         ]);
 
-        setTopTracks(tracksResponse.data.items.slice(0, 5));
+        //gets the top 5 tracks and artists
+        setTopTracks(tracksResponse.data.items);
         setTopArtists(artistsResponse.data.items);
 
-        // Calculate favorite year and decade
+        // returns yearCounts used for the calculation of favorite year and decade
         const yearCounts = tracksResponse.data.items.reduce((acc, track) => {
           const year = new Date(track.album.release_date).getFullYear();
           acc[year] = (acc[year] || 0) + 1;
           return acc;
         }, {});
 
+
         const favoriteYear = Object.entries(yearCounts).sort((a, b) => b[1] - a[1])[0][0];
         const favoriteDecade = Math.floor(favoriteYear / 10) * 10;
 
         setFavoriteMusic({ year: favoriteYear, decade: favoriteDecade });
 
-        // Get recommendations
+        // Get recommendations based off of top 2 artists and tracks from Spotify API
         const seedArtists = artistsResponse.data.items.slice(0, 2).map(artist => artist.id).join(',');
         const seedTracks = tracksResponse.data.items.slice(0, 2).map(track => track.id).join(',');
         const recommendationsResponse = await axios.get('https://api.spotify.com/v1/recommendations', {
@@ -83,16 +92,19 @@ const DashboardDefault = ({ token, timeRange }) => {
     fetchUserData();
   }, [token, timeRange]);
 
+  //shows loading text
   if (loading) {
     return <div className="text-center mt-20 text-xl">Loading your personalized dashboard...</div>;
   }
-
+ 
+  //used for giving the genres different background colors to add some variety into the website
   const genreColors = ['bg-pink-500', 'bg-purple-500', 'bg-indigo-500'];
 
+  //shows time range for the music era section
   const timeRangeText = {
-    short_term: 'this month',
-    medium_term: 'in the last 6 months',
-    long_term: 'in the last year'
+    short_term: 'This month',
+    medium_term: 'In the last 6 months',
+    long_term: 'In the last year'
   };
 
   return (

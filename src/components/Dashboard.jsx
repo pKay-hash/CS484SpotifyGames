@@ -1,3 +1,4 @@
+// Dashboard component is in charge of showing the top portion of the website, and serves as a container for each of our games as well.
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import HigherOrLower from './HigherOrLower';
@@ -9,6 +10,7 @@ const Dashboard = ({ token, onLogout }) => {
   const [currentGame, setCurrentGame] = useState(null);
   const [timeRange, setTimeRange] = useState('medium_term');
 
+  // Fetch user data when the component mounts, setting user state with the response from the API call to the user's profile.
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -26,6 +28,7 @@ const Dashboard = ({ token, onLogout }) => {
     fetchUserData();
   }, [token]);
 
+  // Render the game component based on the currentGame state.
   const renderGame = () => {
     switch(currentGame) {
       case 'higherOrLower':
@@ -37,6 +40,7 @@ const Dashboard = ({ token, onLogout }) => {
     }
   };
 
+  // changes the time_range used to make the calls to each of the different games (as well as the dashboard)
   const handleTimeRangeChange = (event) => {
     setTimeRange(event.target.value);
   };

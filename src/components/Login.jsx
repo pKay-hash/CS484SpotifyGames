@@ -1,7 +1,12 @@
+//Page that is rendered to prompt user to log into Spotify, and handles all configuration in terms of access types in the AUTH_URL.
+
 import React from 'react';
 
 const clientId = import.meta.env.VITE_CLIENT_ID || '8d028dc7fb1741a5affeae86686969fe';
 const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/';
+//the line below, provided by Spotify, specifies the clientID (that I made for the app), and specifies my redirect_URI.
+//redirect_URI and client_id are both environment variables in CloudFlare, so I say to use that if it is available, otherwise,
+//to use my localhost as the redirect, as we must be developing locally.
 const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(clientId)}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user-read-private%20user-read-email%20user-top-read%20user-library-read%20playlist-read-private%20user-read-recently-played`;
 const Login = () => {
   return (

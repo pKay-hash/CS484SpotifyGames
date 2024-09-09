@@ -1,3 +1,6 @@
+//The Higher Or Lower Game. This component gathers data from the Spotify API about which artists they've streamed the most 
+//in the specified time_range, which comes ranked by default. We create a game with this information that gives people two musicians
+//that are from their top 50, and asks which one they think they've liked (or listened to) more. 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -12,6 +15,7 @@ const HigherOrLower = ({ token }) => {
   }, []);
 
   const fetchTopArtists = async () => {
+    //TODO this always uses time_range of long_term, gotta make sure this is being passed in as a prop.
     try {
       const response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
         headers: { 'Authorization': `Bearer ${token}` },
@@ -24,18 +28,21 @@ const HigherOrLower = ({ token }) => {
     }
   };
 
+  //used to select the pair of musicians being compared.
   const selectNewPair = (artistList) => {
     const shuffled = [...artistList].sort(() => 0.5 - Math.random());
     setCurrentPair(shuffled.slice(0, 2));
   };
 
+  //handles the user's guess for which musician they think they've liked more.
   const handleGuess = (guess) => {
     const [artist1, artist2] = currentPair;
     const rank1 = artists.indexOf(artist1);
     const rank2 = artists.indexOf(artist2);
-    const isCorrect = (guess === 'higher' && rank2 < rank1) ||
-                      (guess === 'lower' && rank2 > rank1);
+    const isCorrect = (guess === 'higher' && rank2 <= rank1) ||
+                      (guess === 'lower' && rank2 >= rank1);
 
+    //handles score below
     if (isCorrect) {
       setScore(score + 1);
       setMessage(score > 1 ? 'You\'re on a roll!' : 'Correct!');
