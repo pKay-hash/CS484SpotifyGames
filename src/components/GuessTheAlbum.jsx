@@ -10,11 +10,8 @@ const GuessTheAlbum = ({ token, timeRange }) => {
     const [currentAlbum, setCurrentAlbum] = useState(null);
     const [guess, setGuess] = useState('');
     const [feedback, setFeedback] = useState(''); // tells the user if their guess was correct or incorrect.
-    const [snippetLength, setSnippetLength] = useState(1000); // Default to 1 second
     const [isPlaying, setIsPlaying] = useState(false);
-    const [audioType, setAudioType] = useState('normal'); //state for audio type (normal, slowed, reversed, sped up)
     const [filteredAlbums, setFilteredAlbums] = useState([]);
-    const [snippetButtonsDisabled, setSnippetButtonsDisabled] = useState(false); // User shouldn't be able to select snippet length after playing the song once
     const audioRef = useRef(new Audio());//initalizes HTMLAudioElement instance. Specifies the audio reference url later, as it will change on every track change.
 
     useEffect(() => {
