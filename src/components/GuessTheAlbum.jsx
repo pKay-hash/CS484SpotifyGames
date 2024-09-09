@@ -48,7 +48,6 @@ const GuessTheAlbum = ({ token, timeRange }) => {
         setFeedback('');
         setIsPlaying(false);
         setFilteredAlbums([]); // Resets filtered albums
-        setSnippetButtonsDisabled(false); // Re-enables snippet length buttons
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
     };
@@ -65,7 +64,6 @@ const GuessTheAlbum = ({ token, timeRange }) => {
     const playSnippet = async () => {
     if (currentAlbum) {
         setIsPlaying(true);
-        setSnippetButtonsDisabled(true); // Disable snippet length buttons
 
         const response = await fetch(currentAlbum.preview_url); //gets the preview's url
         const arrayBuffer = await response.arrayBuffer(); //splits up response of audio data into array buffer for processing
@@ -77,11 +75,11 @@ const GuessTheAlbum = ({ token, timeRange }) => {
 
         const startTime = audioContext.currentTime;
         source.start(startTime);
-        source.stop(startTime + snippetLength / 1000);
+        source.stop(startTime + 2000 / 1000);
 
         setTimeout(() => {
         setIsPlaying(false);
-        }, snippetLength);
+        }, 2000);
     } else {
         setFeedback("Sorry, no preview available for any of the tracks on this album. Let's try another!");
         selectRandomAlbum(albums); // if preview isn't available for any of the songs on this album, selects another album from the list of albums.
