@@ -9,6 +9,7 @@ const GuessTheSong = ({ token, timeRange }) => {
   const [snippetLength, setSnippetLength] = useState(1000); // Default to 1 second
   const [isPlaying, setIsPlaying] = useState(false);
   const [filteredTracks, setFilteredTracks] = useState([]);
+  const [snippetButtonsDisabled, setSnippetButtonsDisabled] = useState(false);
   const audioRef = useRef(new Audio());
 
   useEffect(() => {
@@ -34,6 +35,8 @@ const GuessTheSong = ({ token, timeRange }) => {
     setGuess('');
     setFeedback('');
     setIsPlaying(false);
+    setFilteredTracks([]); // Reset filtered tracks
+    setSnippetButtonsDisabled(false); // Re-enable snippet length buttons
     audioRef.current.pause();
     audioRef.current.currentTime = 0;
   };
@@ -44,6 +47,7 @@ const GuessTheSong = ({ token, timeRange }) => {
       audioRef.current.currentTime = 0;
       audioRef.current.play();
       setIsPlaying(true);
+      setSnippetButtonsDisabled(true); // Disable snippet length buttons
       setTimeout(() => {
         audioRef.current.pause();
         setIsPlaying(false);
@@ -60,6 +64,7 @@ const GuessTheSong = ({ token, timeRange }) => {
     } else {
       setFeedback(`Sorry, the correct answer was "${currentTrack.name}".`);
     }
+    setFilteredTracks([]); // Reset filtered tracks after guessing
   };
 
   const handleInputChange = (e) => {
@@ -72,34 +77,25 @@ const GuessTheSong = ({ token, timeRange }) => {
     );
   };
 
+  const handleTrackSelection = (track) => {
+    setGuess(track.name);
+    setFilteredTracks([]); // Clear filtered tracks when a track is selected
+  };
+
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-4 text-center text-white">Guess The Song</h2>
       <div className="mb-4 flex justify-center space-x-2">
-        <button 
-          onClick={() => setSnippetLength(125)} 
-          className={`px-3 py-1 rounded ${snippetLength === 125 ? 'bg-blue-600' : 'bg-gray-600'}`}
-        >
-          1/8 sec
-        </button>
-        <button 
-          onClick={() => setSnippetLength(250)} 
-          className={`px-3 py-1 rounded ${snippetLength === 250 ? 'bg-blue-600' : 'bg-gray-600'}`}
-        >
-          1/4 sec
-        </button>
-        <button 
-          onClick={() => setSnippetLength(500)} 
-          className={`px-3 py-1 rounded ${snippetLength === 500 ? 'bg-blue-600' : 'bg-gray-600'}`}
-        >
-          1/2 sec
-        </button>
-        <button 
-          onClick={() => setSnippetLength(1000)} 
-          className={`px-3 py-1 rounded ${snippetLength === 1000 ? 'bg-blue-600' : 'bg-gray-600'}`}
-        >
-          1 sec
-        </button>
+        {[125, 250, 500, 1000].map((length) => (
+          <button 
+            key={length}
+            onClick={() => setSnippetLength(length)} 
+            disabled={snippetButtonsDisabled}
+            className={`px-3 py-1 rounded ${snippetLength === length ? 'bg-blue-600' : 'bg-gray-600'} ${snippetButtonsDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-500'}`}
+          >
+            {length === 1000 ? '1 sec' : `${length/1000} sec`}
+          </button>
+        ))}
       </div>
       <div className="mb-4 flex justify-center">
         <button 
@@ -123,10 +119,14 @@ const GuessTheSong = ({ token, timeRange }) => {
             {filteredTracks.map(track => (
               <li 
                 key={track.id} 
-                onClick={() => setGuess(track.name)}
-                className="px-3 py-1 hover:bg-gray-600 cursor-pointer"
+                onClick={() => handleTrackSelection(track)}
+                className="px-3 py-2 hover:bg-gray-600 cursor-pointer flex items-center justify-between"
               >
-                {track.name}
+                <div className="flex flex-col">
+                  <span className="text-white">{track.name}</span>
+                  <span className="text-gray-400 text-sm">{track.artists[0].name}</span>
+                </div>
+                <img src={track.album.images[2].url} alt={track.album.name} className="w-12 h-12 rounded" />
               </li>
             ))}
           </ul>
