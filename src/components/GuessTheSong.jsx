@@ -14,7 +14,7 @@ const GuessTheSong = ({ token, timeRange }) => {
   const [audioType, setAudioType] = useState('normal'); //state for audio type (normal, slowed, reversed, sped up)
   const [filteredTracks, setFilteredTracks] = useState([]);
   const [snippetButtonsDisabled, setSnippetButtonsDisabled] = useState(false); // User shouldn't be able to select snippet length after playing the song once
-  const audioRef = useRef(new Audio());
+  const audioRef = useRef(new Audio());//initalizes HTMLAudioElement instance. Specifies the audio reference url later, as it will change on every track change.
 
   useEffect(() => {
     fetchTracks();

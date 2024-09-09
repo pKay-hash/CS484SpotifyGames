@@ -75,7 +75,7 @@ const DashboardDefault = ({ token, timeRange }) => {
         }
         setFavoriteGenres(favGenres.map(([genre]) => genre));
 
-        // Find most listened album
+        // Find albums from most listened songs
         const albumCounts = tracksResponse.data.items.reduce((acc, track) => {
           acc[track.album.id] = (acc[track.album.id] || 0) + 1;
           return acc;

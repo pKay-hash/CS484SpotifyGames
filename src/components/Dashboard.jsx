@@ -4,6 +4,7 @@ import axios from 'axios';
 import HigherOrLower from './HigherOrLower';
 import DashboardDefault from './DashboardDefault';
 import GuessTheSong from './GuessTheSong';
+import GuessTheAlbum from './GuessTheAlbum';
 
 const Dashboard = ({ token, onLogout }) => {
   const [user, setUser] = useState(null);
@@ -41,6 +42,8 @@ const Dashboard = ({ token, onLogout }) => {
         return <HigherOrLower token={token} timeRange={timeRange} />;
       case 'guessTheSong':
         return <GuessTheSong token={token} timeRange={timeRange} />;
+      case 'guessTheAlbum':
+        return <GuessTheAlbum token={token} timeRange={timeRange} />;
       default:
         return <DashboardDefault token={token} timeRange={timeRange} />;
     }
@@ -96,6 +99,11 @@ const Dashboard = ({ token, onLogout }) => {
               className="px-3 py-1 text-sm font-medium bg-gray-700 rounded-full border border-transparent hover:bg-gray-600 hover:text-gray-300 hover:border-blue-400 transition duration-300"
               onClick={() => setCurrentGame('lyricQuiz')}>
               Lyric Quiz
+            </button>
+            <button 
+              className="px-3 py-1 text-sm font-medium bg-gray-700 rounded-full border border-transparent hover:bg-gray-600 hover:text-gray-300 hover:border-blue-400 transition duration-300"
+              onClick={() => setCurrentGame('guessTheAlbum')}>
+              Guess the Album
             </button>
           </div>
         </div>
