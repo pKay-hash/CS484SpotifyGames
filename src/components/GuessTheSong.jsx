@@ -11,6 +11,7 @@ const GuessTheSong = ({ token, timeRange }) => {
   const [feedback, setFeedback] = useState(''); // tells the user if their guess was correct or incorrect.
   const [snippetLength, setSnippetLength] = useState(1000); // Default to 1 second
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioType, setAudioType] = useState('normal'); //state for audio type (normal, slowed, reversed, sped up)
   const [filteredTracks, setFilteredTracks] = useState([]);
   const [snippetButtonsDisabled, setSnippetButtonsDisabled] = useState(false); // User shouldn't be able to select snippet length after playing the song once
   const audioRef = useRef(new Audio());
@@ -45,21 +46,47 @@ const GuessTheSong = ({ token, timeRange }) => {
     audioRef.current.currentTime = 0;
   };
 
+  //used to apply 'audioType' changes (slowed, reversed, sped up) to the audio snippet before playing it.
+  const modifyAudio = (audioContext, sourceBuffer) => {
+    const source = audioContext.createBufferSource();
+    source.buffer = sourceBuffer;
+
+    if (audioType === 'slowed') {
+      source.playbackRate.value = 0.75;
+    } else if (audioType === 'sped') {
+      source.playbackRate.value = 1.25;
+    } else if (audioType === 'reversed') {
+      Array.prototype.reverse.call(source.buffer.getChannelData(0));
+      Array.prototype.reverse.call(source.buffer.getChannelData(1));
+    }
+
+    return source;
+  };
+
   //used for playing the snippet of the song for the specified snippetLength.
-  const playSnippet = () => {
+  const playSnippet = async () => {
     if (currentTrack && currentTrack.preview_url) {
-      audioRef.current.src = currentTrack.preview_url;
-      audioRef.current.currentTime = 0;
-      audioRef.current.play();//plays the track when button is clicked
       setIsPlaying(true);
       setSnippetButtonsDisabled(true); // Disable snippet length buttons
+
+      const response = await fetch(currentTrack.preview_url); //gets the preview's url
+      const arrayBuffer = await response.arrayBuffer(); //splits up response of audio data into array buffer for processing
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)(); //AudioContext is the main interface for Web Audio API, webkitAudioContext is for certain older browsers
+      const sourceBuffer = await audioContext.decodeAudioData(arrayBuffer); //makes arrayBuffer => audioBuffer for manipulation and playback using Web Audio API
+      
+      const source = modifyAudio(audioContext, sourceBuffer); //modifies audio using audioType
+      source.connect(audioContext.destination);//connects audio to speakers
+
+      const startTime = audioContext.currentTime;
+      source.start(startTime);
+      source.stop(startTime + snippetLength / 1000);
+
       setTimeout(() => {
-        audioRef.current.pause();
         setIsPlaying(false);
       }, snippetLength);
     } else {
       setFeedback("Sorry, no preview available for this track. Let's try another!");
-      selectRandomTrack(tracks);//  if preview isn't available, selects another track from the list of tracks.
+      selectRandomTrack(tracks); // if preview isn't available, selects another track from the list of tracks.
     }
   };
 
@@ -102,6 +129,18 @@ const GuessTheSong = ({ token, timeRange }) => {
             className={`px-3 py-1 rounded ${snippetLength === length ? 'bg-blue-600' : 'bg-gray-600'} ${snippetButtonsDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-500'}`}
           >
             {length === 1000 ? '1 sec' : `${length/1000} sec`}
+          </button>
+        ))}
+      </div>
+      <div className="mb-4 flex justify-center space-x-2">
+        {['normal', 'slowed', 'sped', 'reversed'].map((type) => (
+          <button 
+            key={type}
+            onClick={() => setAudioType(type)} 
+            disabled={snippetButtonsDisabled}
+            className={`px-3 py-1 rounded capitalize ${audioType === type ? 'bg-green-600' : 'bg-gray-600'} ${snippetButtonsDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-500'}`}
+          >
+            {type}
           </button>
         ))}
       </div>

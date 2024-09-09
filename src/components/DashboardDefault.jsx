@@ -68,10 +68,12 @@ const DashboardDefault = ({ token, timeRange }) => {
             acc[genre] = (acc[genre] || 0) + 1;
             return acc;
           }, {});
-        setFavoriteGenres(Object.entries(genreCounts)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 3)
-          .map(([genre]) => genre));
+        let favGenres = Object.entries(genreCounts).sort((a, b) => b[1] - a[1]);
+        if(favGenres.length > 9){
+          //If there are more than 9 genres, we will only display the top 9.
+          favGenres = favGenres.slice(0, 9);
+        }
+        setFavoriteGenres(favGenres.map(([genre]) => genre));
 
         // Find most listened album
         const albumCounts = tracksResponse.data.items.reduce((acc, track) => {
@@ -97,8 +99,18 @@ const DashboardDefault = ({ token, timeRange }) => {
     return <div className="text-center mt-20 text-xl">Loading your personalized dashboard...</div>;
   }
  
-  //used for giving the genres different background colors to add some variety into the website
-  const genreColors = ['bg-pink-500', 'bg-purple-500', 'bg-indigo-500'];
+  //used for giving the genres different background colors to add some visual variety into the website
+  const genreColors = [
+    'bg-pink-500',
+    'bg-purple-500',
+    'bg-indigo-500',
+    'bg-blue-500',
+    'bg-teal-500',
+    'bg-green-500',
+    'bg-yellow-500',
+    'bg-orange-500',
+    'bg-red-500'
+  ];
 
   //shows time range for the music era section
   const timeRangeText = {
