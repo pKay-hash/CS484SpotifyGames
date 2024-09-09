@@ -33,7 +33,7 @@ const DashboardDefault = ({ token, timeRange }) => {
         ]);
 
         //gets the top 5 tracks and artists
-        setTopTracks(tracksResponse.data.items);
+        setTopTracks(tracksResponse.data.items.slice(0, 5));
         setTopArtists(artistsResponse.data.items);
 
         // returns yearCounts used for the calculation of favorite year and decade
