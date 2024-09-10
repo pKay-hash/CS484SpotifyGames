@@ -1,3 +1,8 @@
+// GuessTheAlbum is the component in charge of the Guess The Album game, in which people are given a 2-second snippet
+// of every song (that has a preview available) of a random album (pooled from the albums of their top 50 tracks),
+// played at the same time, and they must guess the name of the album. 
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
@@ -11,16 +16,15 @@ const GuessTheAlbum = ({ token, timeRange }) => {
     const [filteredAlbums, setFilteredAlbums] = useState([]);
     const audioContext = useRef(null);
 
+    // whenever timeRange or token changes, fetch new tracks and process into albums
     useEffect(() => {
         fetchTracks();
-    }, [token, timeRange]);
-
-    useEffect(() => {
         if (tracks.length > 0) {
             processAlbums();
         }
-    }, [tracks]);
+    }, [token, timeRange]);
 
+    //fetches top 50 tracks for given time_range
     const fetchTracks = async () => {
         try {
             const response = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
@@ -33,6 +37,7 @@ const GuessTheAlbum = ({ token, timeRange }) => {
         }
     };
 
+    //processes into albums from top 50 tracks
     const processAlbums = () => {
         const albumMap = new Map();
         tracks.forEach(track => {
@@ -45,6 +50,7 @@ const GuessTheAlbum = ({ token, timeRange }) => {
         selectRandomAlbum(Array.from(albumMap.values()));
     };
 
+    //selects random album for current iteration of game
     const selectRandomAlbum = (albumList) => {
         const randomAlbum = albumList[Math.floor(Math.random() * albumList.length)];
         setCurrentAlbum(randomAlbum);
@@ -57,11 +63,12 @@ const GuessTheAlbum = ({ token, timeRange }) => {
         }
     };
 
+    //fetches audio data for tracks and calls function that combines them into a single audio buffer
     const playSnippet = async () => {
-        if (currentAlbum && currentAlbum.tracks.some(track => track.preview_url)) {
+        if (currentAlbum && currentAlbum.tracks.some(track => track.preview_url)) { //checks if there is at least one track with a preview_url in our randomly picked album
             setIsPlaying(true);
             audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
-            
+            //holds all separate trackBuffers
             const trackBuffers = await Promise.all(
                 currentAlbum.tracks
                     .filter(track => track.preview_url)
@@ -81,20 +88,22 @@ const GuessTheAlbum = ({ token, timeRange }) => {
             setTimeout(() => {
                 source.stop();
                 setIsPlaying(false);
-            }, 2000);
+            }, 2000);//plays for 2 seconds
         } else {
             setFeedback("Sorry, no previews available for this album. Let's try another!");
             selectRandomAlbum(albums);
         }
     };
 
+    //combines all of the tracks into a single buffer to be played by Web Audio API
     const combineAudioBuffers = (context, buffers) => {
+        //creates new buffer in the same 2-channel format to be filled with each buffer's data manually
         const combinedBuffer = context.createBuffer(
             2,
             context.sampleRate * 2,
             context.sampleRate
         );
-
+        //goes through each of the buffers and inserts their data into the combined buffer incrementally
         buffers.forEach(buffer => {
             for (let channel = 0; channel < 2; channel++) {
                 const channelData = combinedBuffer.getChannelData(channel);
@@ -110,6 +119,7 @@ const GuessTheAlbum = ({ token, timeRange }) => {
         return combinedBuffer;
     };
 
+    //checks guess to the current album's name
     const handleGuess = () => {
         if (guess.toLowerCase() === currentAlbum.name.toLowerCase()) {
             setFeedback('Correct! Well done!');
@@ -119,6 +129,7 @@ const GuessTheAlbum = ({ token, timeRange }) => {
         setFilteredAlbums([]);
     };
 
+    //resets filteredAlbums
     const handleInputChange = (e) => {
         const input = e.target.value;
         setGuess(input);
@@ -129,6 +140,8 @@ const GuessTheAlbum = ({ token, timeRange }) => {
         );
     };
 
+
+    //when an album is selected from filteredAlbums, it should fill the field for the user's guess.
     const handleAlbumSelection = (album) => {
         setGuess(album.name);
         setFilteredAlbums([]);
