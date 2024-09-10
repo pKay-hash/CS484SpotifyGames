@@ -43,7 +43,7 @@ const App = () => {
         <>
           <header className="bg-gray-800 p-4 shadow-md">
             <div className="max-w-7xl mx-auto flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-blue-500">Spotify Game App</h1>
+              <h1 className="text-2xl font-bold text-blue-500">Games On The Spot</h1>
               <button 
                 className="px-4 py-2 bg-gray-700 text-white rounded-full border border-transparent hover:bg-gray-600 hover:text-gray-300 hover:border-blue-400 transition duration-300"
                 onClick={logout}>
