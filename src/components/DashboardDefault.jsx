@@ -98,7 +98,7 @@ const DashboardDefault = ({ token, timeRange }) => {
     fetchUserData();
   }, [token, timeRange]);
 
-  // New function to handle play/pause
+  // Function to handle preview play/pause
   const handlePlayPause = (track) => {
     if (currentlyPlaying === track.id) {
       audioRef.current.pause();
@@ -113,7 +113,7 @@ const DashboardDefault = ({ token, timeRange }) => {
     }
   };
 
-  // Effect to handle audio playback
+  // useEffect hook to handle audio playback
   useEffect(() => {
     audioRef.current.addEventListener('ended', () => setCurrentlyPlaying(null));
     return () => {
