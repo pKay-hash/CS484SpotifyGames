@@ -1,7 +1,9 @@
 // Used as the default page before any game is selected, showing general data about the user's listening habits.
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { PlayIcon, PauseIcon } from '@heroicons/react/solid'; // Add this import
+
 
 const DashboardDefault = ({ token, timeRange }) => {
   const [topTracks, setTopTracks] = useState([]);
@@ -11,6 +13,8 @@ const DashboardDefault = ({ token, timeRange }) => {
   const [favoriteMusic, setFavoriteMusic] = useState({ year: null, decade: null }); //shows the user's favorite decade of music
   const [mostListenedAlbum, setMostListenedAlbum] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const audioRef = useRef(new Audio());
 
   //fetches various kinds of data from Spotify API
   useEffect(() => {
@@ -94,6 +98,30 @@ const DashboardDefault = ({ token, timeRange }) => {
     fetchUserData();
   }, [token, timeRange]);
 
+  // New function to handle play/pause
+  const handlePlayPause = (track) => {
+    if (currentlyPlaying === track.id) {
+      audioRef.current.pause();
+      setCurrentlyPlaying(null);
+    } else {
+      if (currentlyPlaying) {
+        audioRef.current.pause();
+      }
+      audioRef.current.src = track.preview_url;
+      audioRef.current.play();
+      setCurrentlyPlaying(track.id);
+    }
+  };
+
+  // Effect to handle audio playback
+  useEffect(() => {
+    audioRef.current.addEventListener('ended', () => setCurrentlyPlaying(null));
+    return () => {
+      audioRef.current.removeEventListener('ended', () => setCurrentlyPlaying(null));
+      audioRef.current.pause();
+    };
+  }, []);
+
   //shows loading text
   if (loading) {
     return <div className="text-center mt-20 text-xl">Loading your personalized dashboard...</div>;
@@ -124,9 +152,23 @@ const DashboardDefault = ({ token, timeRange }) => {
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
         <h3 className="text-2xl font-semibold mb-4 text-blue-400">Your Top Tracks</h3>
         <ul className="space-y-4">
-          {topTracks.map((track, index) => (
+          {topTracks.map((track) => (
             <li key={track.id} className="flex items-center space-x-4">
-              <img src={track.album.images[2].url} alt={track.name} className="w-16 h-16 rounded" />
+              <div className="relative group">
+                <img src={track.album.images[2].url} alt={track.name} className="w-16 h-16 rounded" />
+                {track.preview_url && (
+                  <button
+                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    onClick={() => handlePlayPause(track)}
+                  >
+                    {currentlyPlaying === track.id ? (
+                      <PauseIcon className="h-8 w-8 text-white" />
+                    ) : (
+                      <PlayIcon className="h-8 w-8 text-white" />
+                    )}
+                  </button>
+                )}
+              </div>
               <div>
                 <span className="font-medium text-lg">{track.name}</span>
                 <p className="text-gray-400">{track.artists[0].name}</p>
@@ -151,9 +193,23 @@ const DashboardDefault = ({ token, timeRange }) => {
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
         <h3 className="text-2xl font-semibold mb-4 text-purple-400">Recommended Tracks</h3>
         <ul className="space-y-4">
-          {recommendations.map((track, index) => (
+          {recommendations.map((track) => (
             <li key={track.id} className="flex items-center space-x-4">
-              <img src={track.album.images[2].url} alt={track.name} className="w-16 h-16 rounded" />
+              <div className="relative group">
+                <img src={track.album.images[2].url} alt={track.name} className="w-16 h-16 rounded" />
+                {track.preview_url && (
+                  <button
+                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    onClick={() => handlePlayPause(track)}
+                  >
+                    {currentlyPlaying === track.id ? (
+                      <PauseIcon className="h-8 w-8 text-white" />
+                    ) : (
+                      <PlayIcon className="h-8 w-8 text-white" />
+                    )}
+                  </button>
+                )}
+              </div>
               <div>
                 <span className="font-medium text-lg">{track.name}</span>
                 <p className="text-gray-400">{track.artists[0].name}</p>
