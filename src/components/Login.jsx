@@ -9,18 +9,18 @@ const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/
 //the line below, provided by Spotify, specifies the clientID (that I made for the app), and specifies my redirect_URI.
 //redirect_URI and client_id are both environment variables in CloudFlare, so I say to use that if it is available, otherwise,
 //to use my localhost as the redirect, as we must be developing locally.
-
+//${styles['bg-gradient-animation']} -> gradient class 
 const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(clientId)}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user-read-private%20user-read-email%20user-top-read%20user-library-read%20playlist-read-private%20user-read-recently-played`;
 
 const Login = () => {
   return (
-    <div className={`min-h-screen flex items-center justify-center ${styles['bg-gradient-animation']}`}>
-      <div className="flex items-center space-x-8">
-        <img src={logo} alt="Games On The Spot Logo" className="w-64 h-64" />
-        
+    <div className={`min-h-screen flex flex-col content-center bg-gradient-to-b from-indigo-500`}>
+      <img src={logo} alt="Games On The Spot Logo" className="w-16 h-16 justify-self-start" />
+      <h1 className="font-teko font-semibold text-8xl mb-6 text-center text-green-400">Welcome to<br></br> Games On The Spot!</h1>
+      <div className="flex flex-row justify-center content-center space-x-8">
+
         <div className="w-96 bg-gray-800 bg-opacity-80 rounded-lg shadow-xl overflow-hidden">
           <div className="p-8">
-            <h2 className="text-4xl font-bold mb-6 text-center text-green-400">Games On The Spot!</h2>
             <p className="text-lg mb-8 text-center text-gray-300">Discover your music taste through fun, interactive games!</p>
             <div className="space-y-4">
               <p className="text-sm text-gray-400 text-center">Connect with your Spotify account to start playing</p>
