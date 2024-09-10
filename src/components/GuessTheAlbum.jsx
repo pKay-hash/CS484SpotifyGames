@@ -19,9 +19,6 @@ const GuessTheAlbum = ({ token, timeRange }) => {
     // whenever timeRange or token changes, fetch new tracks and process into albums
     useEffect(() => {
         fetchTracks();
-        if (tracks.length > 0) {
-            processAlbums();
-        }
     }, [token, timeRange]);
 
     //fetches top 50 tracks for given time_range
@@ -37,6 +34,11 @@ const GuessTheAlbum = ({ token, timeRange }) => {
         }
     };
 
+    useEffect(() => {
+        if (tracks.length > 0) {
+            processAlbums();
+        }
+    }, [tracks]);
     //processes into albums from top 50 tracks
     const processAlbums = () => {
         const albumMap = new Map();
