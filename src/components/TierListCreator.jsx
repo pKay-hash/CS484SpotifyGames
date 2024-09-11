@@ -5,7 +5,7 @@ import axios from 'axios';
 import { PlayIcon, PauseIcon } from '@heroicons/react/solid';
 
 
-const DashboardDefault = ({ token, timeRange }) => {
+const TierListCreator = ({ token, timeRange }) => {
   const [topTracks, setTopTracks] = useState([]);
   const [topArtists, setTopArtists] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
@@ -258,4 +258,4 @@ const DashboardDefault = ({ token, timeRange }) => {
   );
 };
 
-export default DashboardDefault;
+export default TierListCreator;

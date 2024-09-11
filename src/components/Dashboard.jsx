@@ -5,6 +5,9 @@ import HigherOrLower from './HigherOrLower';
 import DashboardDefault from './DashboardDefault';
 import GuessTheSong from './GuessTheSong';
 import GuessTheAlbum from './GuessTheAlbum';
+import TierListCreator from './TierListCreator';
+import BracketCreator from './BracketCreator';
+
 
 const Dashboard = ({ token, onLogout }) => {
   const [user, setUser] = useState(null);
@@ -44,6 +47,10 @@ const Dashboard = ({ token, onLogout }) => {
         return <GuessTheSong token={token} timeRange={timeRange} />;
       case 'guessTheAlbum':
         return <GuessTheAlbum token={token} timeRange={timeRange} />;
+      case 'tierListCreator':
+        return <TierListCreator token={token} timeRange={timeRange} />;
+      case 'bracketCreator':
+        return <BracketCreator token={token} timeRange={timeRange} />;
       default:
         return <DashboardDefault token={token} timeRange={timeRange} />;
     }
@@ -104,6 +111,16 @@ const Dashboard = ({ token, onLogout }) => {
               className="px-3 py-1 text-sm font-medium bg-gray-700 rounded-full border border-transparent hover:bg-gray-600 hover:text-gray-300 hover:border-blue-400 transition duration-300"
               onClick={() => setCurrentGame('guessTheAlbum')}>
               Guess the Album
+            </button>
+            <button 
+              className="px-3 py-1 text-sm font-medium bg-gray-700 rounded-full border border-transparent hover:bg-gray-600 hover:text-gray-300 hover:border-blue-400 transition duration-300"
+              onClick={() => setCurrentGame('tierListCreator')}>
+              Tier List Creator
+            </button>
+            <button 
+              className="px-3 py-1 text-sm font-medium bg-gray-700 rounded-full border border-transparent hover:bg-gray-600 hover:text-gray-300 hover:border-blue-400 transition duration-300"
+              onClick={() => setCurrentGame('bracketCreator')}>
+              Bracket Creator
             </button>
           </div>
         </div>
