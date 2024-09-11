@@ -6,8 +6,8 @@ A website that allows users to sign in with their Spotify account, giving them a
 
 npm install  
 npm install axios  
-npm install -D tailwindcss postcss autoprefixer  
-npx tailwindcss init -p  
+npm install -D tailwindcss postcss autoprefixer 
+npm install @heroicons/react@v1
 npm run dev   
   
 ## Prod-branch* available at **cs484spotifygames.pages.dev**
