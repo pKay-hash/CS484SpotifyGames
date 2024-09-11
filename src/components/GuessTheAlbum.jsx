@@ -39,6 +39,7 @@ const GuessTheAlbum = ({ token, timeRange }) => {
             processAlbums();
         }
     }, [tracks]);
+
     //processes into albums from top 50 tracks
     const processAlbums = () => {
         const albumMap = new Map();
@@ -53,9 +54,18 @@ const GuessTheAlbum = ({ token, timeRange }) => {
     };
 
     //selects random album for current iteration of game
-    const selectRandomAlbum = (albumList) => {
+    const selectRandomAlbum = async (albumList) => {
         const randomAlbum = albumList[Math.floor(Math.random() * albumList.length)];
-        setCurrentAlbum(randomAlbum);
+        // Fetch full album data
+        try {
+            const response = await axios.get(`https://api.spotify.com/v1/albums/${randomAlbum.id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            setCurrentAlbum(response.data);
+        } catch (error) {
+            console.error('Error fetching full album data:', error);
+            setCurrentAlbum(randomAlbum); // Fallback to original album data if fetch fails
+        }
         setGuess('');
         setFeedback('');
         setIsPlaying(false);
@@ -67,18 +77,23 @@ const GuessTheAlbum = ({ token, timeRange }) => {
 
     //fetches audio data for tracks and calls function that combines them into a single audio buffer
     const playSnippet = async () => {
-        if (currentAlbum && currentAlbum.tracks.some(track => track.preview_url)) { //checks if there is at least one track with a preview_url in our randomly picked album
+        if (currentAlbum && currentAlbum.tracks && currentAlbum.tracks.items.some(track => track.preview_url)) {
             setIsPlaying(true);
             audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Filter tracks with preview_url
+            const tracksWithPreviews = currentAlbum.tracks.items.filter(track => track.preview_url);
+            
+            // Randomly select up to 5 tracks
+            const selectedTracks = shuffleArray(tracksWithPreviews).slice(0, 5);
+            
             //holds all separate trackBuffers
             const trackBuffers = await Promise.all(
-                currentAlbum.tracks
-                    .filter(track => track.preview_url)
-                    .map(async track => {
-                        const response = await fetch(track.preview_url);
-                        const arrayBuffer = await response.arrayBuffer();
-                        return await audioContext.current.decodeAudioData(arrayBuffer);
-                    })
+                selectedTracks.map(async track => {
+                    const response = await fetch(track.preview_url);
+                    const arrayBuffer = await response.arrayBuffer();
+                    return await audioContext.current.decodeAudioData(arrayBuffer);
+                })
             );
 
             const combinedBuffer = combineAudioBuffers(audioContext.current, trackBuffers);
@@ -96,6 +111,16 @@ const GuessTheAlbum = ({ token, timeRange }) => {
             selectRandomAlbum(albums);
         }
     };
+
+    // Helper function to shuffle an array
+    const shuffleArray = (array) => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    };
+
 
     //combines all of the tracks into a single buffer to be played by Web Audio API
     const combineAudioBuffers = (context, buffers) => {
