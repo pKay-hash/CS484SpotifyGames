@@ -71,6 +71,7 @@ const Dashboard = ({ token, onLogout }) => {
     <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">
       <div className="bg-gray-800 p-4 shadow-md">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <img className="rounded-full" src={user.images[0]?.url}></img>
           <h2 className="text-xl font-semibold">Welcome, {user?.display_name || 'User'}</h2>
           <div className="space-x-2">
             <select 
