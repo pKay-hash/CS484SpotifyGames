@@ -11,3 +11,6 @@ npm install @heroicons/react@v1
 npm run dev   
   
 ## Prod-branch* available at **cs484spotifygames.pages.dev**
+
+
+![image](https://github.com/user-attachments/assets/b38badab-2801-4432-8adf-4646e1cce7a5)
