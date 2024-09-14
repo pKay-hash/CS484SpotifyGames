@@ -6,7 +6,9 @@ module.exports = {
   ],
   theme: {
     extend: {
-      fontFamily:{teko:["Teko", 'sans-serif']},
+      fontFamily:{teko:["Teko", 'sans-serif'],
+        oswald:["Oswald", 'sans-serif']
+      },
     },
   },
   plugins: [],

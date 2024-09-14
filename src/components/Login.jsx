@@ -1,8 +1,9 @@
 //Page that is rendered to prompt user to log into Spotify, and handles all configuration in terms of access types in the AUTH_URL.
 
 import React from 'react';
-import logo from '../assets/logo.png'; // Import the logo
+import logo from '../assets/logo.png'; // Import the logo (nice)
 import styles from './Login.module.css';
+import Header from './Header';
 
 const clientId = import.meta.env.VITE_CLIENT_ID || '8d028dc7fb1741a5affeae86686969fe';
 const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/';
@@ -10,18 +11,22 @@ const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/
 //redirect_URI and client_id are both environment variables in CloudFlare, so I say to use that if it is available, otherwise,
 //to use my localhost as the redirect, as we must be developing locally.
 //${styles['bg-gradient-animation']} -> gradient class 
+//bg-gradient-to-r from-green-400 from-20% via-green-200 via-30% to-emerald-500 to-90% inline-block text-transparent bg-clip-text -> OG gradient (by yours truly)
 const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(clientId)}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user-read-private%20user-read-email%20user-top-read%20user-library-read%20playlist-read-private%20user-read-recently-played`;
 
 const Login = () => {
   return (
-    <div className={`min-h-screen flex flex-col content-center bg-gradient-to-b from-indigo-500`}>
-      <img src={logo} alt="Games On The Spot Logo" className="w-16 h-16 justify-self-start" />
-      <h1 className="font-teko font-semibold text-8xl mb-6 text-center text-green-400">Welcome to<br></br> Games On The Spot!</h1>
+    <div className={`min-h-screen flex flex-col content-center bg-gradient-to-r from-slate-900 to-slate-700`}>
+      {/* <img src={logo} alt="Games On The Spot Logo" className="w-8 h-8 ml-20 justify-self-start" /> */}
+      <Header />
+      <h1 className="font-teko font-semibold text-8xl mt-7 mb-4 text-center text-green-500">Welcome to </h1>
+      <h1 className="font-teko font-semibold text-8xl mb-6 text-center bg-gradient-to-r from-green-400 from-20% via-green-200 via-30% to-emerald-500 to-90% inline-block text-transparent bg-clip-text">Games On The Spot!</h1>
+      <p className="font-oswald text-lg mb-8 text-center text-gray-300">Discover your music taste through fun, interactive games that are curated from your Spotify Premium Account without their permission!</p>
       <div className="flex flex-row justify-center content-center space-x-8">
 
         <div className="w-96 bg-gray-800 bg-opacity-80 rounded-lg shadow-xl overflow-hidden">
           <div className="p-8">
-            <p className="text-lg mb-8 text-center text-gray-300">Discover your music taste through fun, interactive games!</p>
+            
             <div className="space-y-4">
               <p className="text-sm text-gray-400 text-center">Connect with your Spotify account to start playing</p>
               <a 
