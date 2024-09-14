@@ -1,6 +1,6 @@
 //Page that is rendered to prompt user to log into Spotify, and handles all configuration in terms of access types in the AUTH_URL.
 
-import React from 'react';
+import {React, useState} from 'react';
 import logo from '../assets/logo.png'; // Import the logo (nice)
 import styles from './Login.module.css';
 import Header from './Header';
@@ -15,8 +15,9 @@ const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/
 const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(clientId)}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user-read-private%20user-read-email%20user-top-read%20user-library-read%20playlist-read-private%20user-read-recently-played`;
 
 const Login = () => {
+  const [getStartedClicked, setGetStartedClicked] = useState(false);
   return (
-    <div className={`min-h-screen flex flex-col content-center bg-gradient-to-r from-slate-900 to-slate-700`}>
+    <div className={`min-h-screen flex flex-col content-center bg-gradient-to-r from-stone-900 to-zinc-800`}>
       {/* <img src={logo} alt="Games On The Spot Logo" className="w-8 h-8 ml-20 justify-self-start" /> */}
       <Header />
       <h1 className="font-teko font-semibold text-8xl mt-7 mb-4 text-center text-green-500">Welcome to </h1>
@@ -24,20 +25,20 @@ const Login = () => {
       <p className="font-oswald text-lg mb-8 text-center text-gray-300">Discover your music taste through fun, interactive games that are curated from your Spotify Premium Account without their permission!</p>
       <div className="flex flex-row justify-center content-center space-x-8">
 
-        <div className="w-96 bg-gray-800 bg-opacity-80 rounded-lg shadow-xl overflow-hidden">
+        <div className="w-96 bg-zinc-800 bg-opacity-80 rounded-lg shadow-xl overflow-hidden">
           <div className="p-8">
             
             <div className="space-y-4">
               <p className="text-sm text-gray-400 text-center">Connect with your Spotify account to start playing</p>
               <a 
                 href={AUTH_URL}
-                className="block w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-full text-center transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
+                className="block w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-full text-center focus:outline-none animate-pulsate focus:ring-2 focus:ring-green-400 focus:ring-opacity-50"
               >
                 Login with Spotify
               </a>
             </div>
           </div>
-          <div className="px-8 py-4 bg-gray-900 bg-opacity-80 border-t border-gray-800">
+          <div className="px-8 py-4 bg-zinc-900 bg-opacity-80 border-t border-gray-800">
             <p className="text-xs text-gray-500 text-center">
               By logging in, you agree to our Terms of Service and Privacy Policy.
             </p>
