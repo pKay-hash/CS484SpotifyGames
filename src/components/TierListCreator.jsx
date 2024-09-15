@@ -1,14 +1,18 @@
+//The TierListCreator component is in charge of allowing people to create their own Tier list of musically related things! This may include,
+// but is not limited to, their top tracks, top artists, albums, etc. This component is similar to the BracketCreator component, in that it 
+// allows people to create something that they can give other people to play, as opposed to just having a game that they can play
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const TierListCreator = ({ token, timeRange }) => {
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState([]); //the things to be tier-listed
   const [tiers, setTiers] = useState({
     S: [], A: [], B: [], C: [], D: [], E: [], F: [], Unranked: []
-  });
-  const [itemType, setItemType] = useState('albums');
+  }); // holds items in each tier
+  const [itemType, setItemType] = useState('albums'); //defaults to tier-listing albums
 
+  //classnames for coloring attributes for each of the tiers
   const tierColors = {
     S: 'bg-blue-200 text-blue-800',
     A: 'bg-green-200 text-green-800',
@@ -20,6 +24,7 @@ const TierListCreator = ({ token, timeRange }) => {
     Unranked: 'bg-gray-200 text-gray-800'
   };
 
+  //gets items on token, timeRange, or itemType change
   useEffect(() => {
     fetchItems();
   }, [token, timeRange, itemType]);
@@ -55,12 +60,13 @@ const TierListCreator = ({ token, timeRange }) => {
         fetchedItems = uniqueAlbums;
       }
       setItems(fetchedItems);
-      resetTiers(fetchedItems);
+      resetTiers(fetchedItems); //should reset tiers when changes happen (to itemType and timeRange)
     } catch (error) {
       console.error('Error fetching items:', error);
     }
   };
 
+  //resets the tiers to blank
   const resetTiers = (newItems) => {
     setTiers(prevTiers => ({
       ...Object.fromEntries(Object.keys(prevTiers).map(key => [key, []])),
@@ -68,6 +74,7 @@ const TierListCreator = ({ token, timeRange }) => {
     }));
   };
 
+  //takes care of Draggable
   const onDragEnd = (result) => {
     const { source, destination } = result;
     if (!destination) return;
@@ -82,6 +89,7 @@ const TierListCreator = ({ token, timeRange }) => {
     setTiers(newTiers);
   };
 
+  //needs varied image obtaining, as getting an image for an item is different depending on if it is for an artist, track, or album.
   const getItemImage = (item) => {
     if (itemType === 'artists') {
       return item.images[0]?.url;
@@ -93,6 +101,7 @@ const TierListCreator = ({ token, timeRange }) => {
     return ''; // Fallback empty string if no image is found
   };
 
+  //creation of Draggable components
   const renderItem = (item, index) => (
     <Draggable key={item.id} draggableId={item.id} index={index}>
       {(provided) => (
@@ -117,6 +126,7 @@ const TierListCreator = ({ token, timeRange }) => {
     </Draggable>
   );
 
+  //manually handles resetting of itemType, due to some unforeseen problems
   const handleItemTypeChange = (e) => {
     setItemType(e.target.value);
     setItems([]);
