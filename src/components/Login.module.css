@@ -21,4 +21,28 @@
     100% {
       background-position: 0% 50%;
     } */
-  
+    /* @keyframes animateImage {
+      0%, 100% {
+        opacity: 0.8;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+    }
+    
+    .animate-cole {
+      animation: animateImage 6s ease-in-out infinite;
+      animation-delay: 0s;
+    }
+    
+    .animate-kdot {
+      animation: animateImage 6s ease-in-out infinite;
+      animation-delay: 2s;
+    }
+    
+    .animate-drake {
+      animation: animateImage 6s ease-in-out infinite;
+      animation-delay: 4s;
+    } */
