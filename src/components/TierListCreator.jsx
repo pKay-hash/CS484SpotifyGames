@@ -1,17 +1,24 @@
-//The TierListCreator component is in charge of allowing people to create their own Tier list of musically related things! This may include,
-// but is not limited to, their top tracks, top artists, albums, etc. This component is similar to the BracketCreator component, in that it 
-// allows people to create something that they can give other people to play, as opposed to just having a game that they can play
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-
 
 const TierListCreator = ({ token, timeRange }) => {
   const [items, setItems] = useState([]);
   const [tiers, setTiers] = useState({
     S: [], A: [], B: [], C: [], D: [], E: [], F: [], Unranked: []
-  }); // holds items in each tier
+  });
   const [itemType, setItemType] = useState('albums');
+
+  const tierColors = {
+    S: 'bg-blue-200 text-blue-800',
+    A: 'bg-green-200 text-green-800',
+    B: 'bg-lime-200 text-lime-800',
+    C: 'bg-yellow-200 text-yellow-800',
+    D: 'bg-orange-200 text-orange-800',
+    E: 'bg-red-200 text-red-800',
+    F: 'bg-red-300 text-red-900',
+    Unranked: 'bg-gray-200 text-gray-800'
+  };
 
   useEffect(() => {
     fetchItems();
@@ -35,20 +42,24 @@ const TierListCreator = ({ token, timeRange }) => {
           headers: { 'Authorization': `Bearer ${token}` },
           params: { time_range: timeRange, limit: 50 }
         });
-        //uses.filter to filter out duplicates from albums.
         const uniqueAlbums = [...new Set(tracksResponse.data.items.map(track => track.album.id))];
         response = { data: { items: tracksResponse.data.items.filter((track, index) => 
           uniqueAlbums.indexOf(track.album.id) === index
         )}};
       }
       setItems(response.data.items);
-      setTiers(prevTiers => ({ ...prevTiers, Unranked: response.data.items }));
+      resetTiers(response.data.items);
     } catch (error) {
       console.error('Error fetching items:', error);
     }
   };
 
-  //used for drag and drop functionality
+  const resetTiers = (newItems) => {
+    setTiers({
+      S: [], A: [], B: [], C: [], D: [], E: [], F: [], Unranked: newItems
+    });
+  };
+
   const onDragEnd = (result) => {
     const { source, destination } = result;
     if (!destination) return;
@@ -63,7 +74,6 @@ const TierListCreator = ({ token, timeRange }) => {
     setTiers(newTiers);
   };
 
-  //adds Draggable components from @hello-pangea/dnd for each of the items being rendered depending on value of itemType
   const renderItem = (item, index) => (
     <Draggable key={item.id} draggableId={item.id} index={index}>
       {(provided) => (
@@ -71,17 +81,16 @@ const TierListCreator = ({ token, timeRange }) => {
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className="relative w-20 h-20 m-1" 
+          className="relative w-16 h-16 m-1" 
         >
           <img
             src={itemType !== 'artists' ? item.album.images[0]?.url : item.images[0]?.url}
             alt={item.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded"
           />
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white p-1">
-            <span className="text-center break-words" style={{ fontSize: `${Math.max(8, Math.min(14, 100 / item.name.length))}px` }}>
-              {item.name}
-              {/* TODO need to fix this for albums (needs to show album name, and not the name of the track that was used to get the album) */}
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white p-1 rounded">
+            <span className="text-center break-words text-xs">
+              {itemType === 'albums' ? item.album.name : item.name}
             </span>
           </div>
         </div>
@@ -89,12 +98,17 @@ const TierListCreator = ({ token, timeRange }) => {
     </Draggable>
   );
 
+  const handleItemTypeChange = (e) => {
+    setItemType(e.target.value);
+    resetTiers([]);  // Reset tiers when changing item type
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-4">
       <h2 className="text-2xl font-bold mb-4">Tier List Creator</h2>
       <select
         value={itemType}
-        onChange={(e) => setItemType(e.target.value)}
+        onChange={handleItemTypeChange}
         className="mb-4 p-2 bg-gray-700 text-white rounded"
       >
         <option value="artists">Artists</option>
@@ -102,23 +116,29 @@ const TierListCreator = ({ token, timeRange }) => {
         <option value="albums">Albums</option>
       </select>
       <DragDropContext onDragEnd={onDragEnd}>
-        {Object.entries(tiers).map(([tier, tierItems]) => (
-          <Droppable key={tier} droppableId={tier} direction="horizontal">
-            {(provided) => (
-              <div className="mb-4">
-                <h3 className="text-xl font-semibold mb-2">{tier}</h3>
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className="flex flex-wrap bg-gray-700 p-2 min-h-[100px]"
-                >
-                  {tierItems.map((item, index) => renderItem(item, index))}
-                  {provided.placeholder}
+        <div className="flex flex-col space-y-2">
+          {Object.entries(tiers).map(([tier, tierItems]) => (
+            <div key={tier} className="flex items-stretch">
+              {tier !== 'Unranked' && (
+                <div className={`w-10 font-bold text-xl flex items-center justify-center rounded-l ${tierColors[tier]}`}>
+                  {tier}
                 </div>
-              </div>
-            )}
-          </Droppable>
-        ))}
+              )}
+              <Droppable droppableId={tier} direction="horizontal">
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={`flex-1 flex flex-wrap p-2 min-h-[88px] ${tier !== 'Unranked' ? 'rounded-r' : 'rounded'} ${tierColors[tier].split(' ')[0]} bg-opacity-10`}
+                  >
+                    {tierItems.map((item, index) => renderItem(item, index))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          ))}
+        </div>
       </DragDropContext>
     </div>
   );
