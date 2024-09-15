@@ -26,38 +26,47 @@ const TierListCreator = ({ token, timeRange }) => {
 
   const fetchItems = async () => {
     try {
-      let response;
+      let fetchedItems = [];
       if (itemType === 'artists') {
-        response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
+        const response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
           headers: { 'Authorization': `Bearer ${token}` },
           params: { time_range: timeRange, limit: 50 }
         });
+        fetchedItems = response.data.items;
       } else if (itemType === 'tracks') {
-        response = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
+        const response = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
           headers: { 'Authorization': `Bearer ${token}` },
           params: { time_range: timeRange, limit: 50 }
         });
+        fetchedItems = response.data.items;
       } else if (itemType === 'albums') {
         const tracksResponse = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
           headers: { 'Authorization': `Bearer ${token}` },
           params: { time_range: timeRange, limit: 50 }
         });
-        const uniqueAlbums = [...new Set(tracksResponse.data.items.map(track => track.album.id))];
-        response = { data: { items: tracksResponse.data.items.filter((track, index) => 
-          uniqueAlbums.indexOf(track.album.id) === index
-        )}};
+        const uniqueAlbums = [...new Map(tracksResponse.data.items.map(track => 
+          [track.album.id, { 
+            id: track.album.id, 
+            name: track.album.name, 
+            images: track.album.images,
+            artists: track.album.artists
+          }]
+        )).values()];
+        fetchedItems = uniqueAlbums;
       }
-      setItems(response.data.items);
-      resetTiers(response.data.items);
+      console.log('Fetched items:', fetchedItems);
+      setItems(fetchedItems);
+      resetTiers(fetchedItems);
     } catch (error) {
       console.error('Error fetching items:', error);
     }
   };
 
   const resetTiers = (newItems) => {
-    setTiers({
-      S: [], A: [], B: [], C: [], D: [], E: [], F: [], Unranked: newItems
-    });
+    setTiers(prevTiers => ({
+      ...Object.fromEntries(Object.keys(prevTiers).map(key => [key, []])),
+      Unranked: newItems
+    }));
   };
 
   const onDragEnd = (result) => {
@@ -74,6 +83,17 @@ const TierListCreator = ({ token, timeRange }) => {
     setTiers(newTiers);
   };
 
+  const getItemImage = (item) => {
+    if (itemType === 'artists') {
+      return item.images[0]?.url;
+    } else if (itemType === 'tracks') {
+      return item.album.images[0]?.url;
+    } else if (itemType === 'albums') {
+      return item.images[0]?.url;
+    }
+    return ''; // Fallback empty string if no image is found
+  };
+
   const renderItem = (item, index) => (
     <Draggable key={item.id} draggableId={item.id} index={index}>
       {(provided) => (
@@ -84,13 +104,13 @@ const TierListCreator = ({ token, timeRange }) => {
           className="relative w-16 h-16 m-1" 
         >
           <img
-            src={itemType !== 'artists' ? item.album.images[0]?.url : item.images[0]?.url}
+            src={getItemImage(item)}
             alt={item.name}
             className="w-full h-full object-cover rounded"
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white p-1 rounded">
             <span className="text-center break-words text-xs">
-              {itemType === 'albums' ? item.album.name : item.name}
+              {item.name}
             </span>
           </div>
         </div>
@@ -100,7 +120,8 @@ const TierListCreator = ({ token, timeRange }) => {
 
   const handleItemTypeChange = (e) => {
     setItemType(e.target.value);
-    resetTiers([]);  // Reset tiers when changing item type
+    setItems([]);
+    resetTiers([]);
   };
 
   return (
