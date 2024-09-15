@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { PlayIcon, PauseIcon } from '@heroicons/react/solid';
+import { sanitizeInput } from '../utils/xssProtection';
 
 
 const DashboardDefault = ({ token, timeRange }) => {

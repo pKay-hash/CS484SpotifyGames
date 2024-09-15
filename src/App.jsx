@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import { sanitizeInput } from './utils/xssProtection';
 
 const App = () => {
   const [token, setToken] = useState(null); //used to set and retrieve token from localStorage, passed into the dashboard component as a prop
@@ -16,7 +17,7 @@ const App = () => {
 
     if (!storedToken && hash) {
       const parsedHash = new URLSearchParams(hash.substring(1));
-      const accessToken = parsedHash.get("access_token");
+      const accessToken = sanitizeInput(parsedHash.get("access_token"));
       if (accessToken) {
         window.localStorage.setItem("token", accessToken);
         setToken(accessToken);
