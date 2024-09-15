@@ -9,6 +9,7 @@ npm install axios
 npm install -D tailwindcss postcss autoprefixer   
 npm install @heroicons/react@v1   
 npm install dompurify   
+npm install lucide-react   
 npm run dev   
   
 ## Prod-branch* available at **cs484spotifygames.pages.dev**

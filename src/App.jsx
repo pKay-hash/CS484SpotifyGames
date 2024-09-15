@@ -8,6 +8,8 @@ import { sanitizeInput } from './utils/xssProtection';
 
 const App = () => {
   const [token, setToken] = useState(null); //used to set and retrieve token from localStorage, passed into the dashboard component as a prop
+  const [resetDashboard, setResetDashboard] = useState(false); //used for sending user back to DashboardDefault on click of top-left title text
+
 
   // useEffect hook to handle the authentication from Spotify. It will check if the token is stored in the local storage and set it in the state if it is.
   // if not, it will check if the hash contains the access_token and set it in the local storage and state if it does.
@@ -34,6 +36,10 @@ const App = () => {
     window.localStorage.removeItem("token");
   };
 
+  const handleTitleClick = () => {
+    setResetDashboard(true);
+  };
+
   //if the token is null, meaning the user hasn't logged in yet, shows the login component.
   //if the user has logged in, show Dashboard component while passing in the token, which is used for all API calls to Spotify API.
   return (
@@ -44,7 +50,9 @@ const App = () => {
         <>
           <header className="bg-gray-800 p-4 shadow-md">
             <div className="max-w-7xl mx-auto flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-blue-500">Games On The Spot</h1>
+              <h1 onClick={handleTitleClick} className="font-teko font-semibold text-4xl bg-gradient-to-r from-green-400 from-20% via-green-200 via-30% to-emerald-500 to-90% inline-block text-transparent bg-clip-text cursor-pointer hover:opacity-80 transition-opacity duration-300">
+                  Games On The Spot
+              </h1>
               <button 
                 className="px-4 py-2 bg-gray-700 text-white rounded-full border border-transparent hover:bg-gray-600 hover:text-gray-300 hover:border-blue-400 transition duration-300"
                 onClick={logout}>
@@ -52,7 +60,7 @@ const App = () => {
               </button>
             </div>
           </header>
-          <Dashboard token={token} onLogout={logout} />
+          <Dashboard token={token} onLogout={logout} resetDashboard={resetDashboard} setResetDashboard={setResetDashboard} />
         </>
       )}
     </div>
