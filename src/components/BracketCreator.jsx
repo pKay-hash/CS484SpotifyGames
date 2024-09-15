@@ -1,259 +1,162 @@
-// Used as the default page before any game is selected, showing general data about the user's listening habits.
-
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { PlayIcon, PauseIcon } from '@heroicons/react/solid'; 
-
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const BracketCreator = ({ token, timeRange }) => {
-  const [topTracks, setTopTracks] = useState([]);
-  const [topArtists, setTopArtists] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
-  const [favoriteGenres, setFavoriteGenres] = useState([]);
-  const [favoriteMusic, setFavoriteMusic] = useState({ year: null, decade: null }); //shows the user's favorite decade of music
-  const [mostListenedAlbum, setMostListenedAlbum] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
-  const audioRef = useRef(new Audio());
+  const [items, setItems] = useState([]);
+  const [bracket, setBracket] = useState([]);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [itemType, setItemType] = useState('artists');
 
-  //fetches various kinds of data from Spotify API
   useEffect(() => {
-    const fetchUserData = async () => {
-      setLoading(true);
-      //favorite Tracks and Artists
-      try {
-        //gets 50, as all 50 will be used for different calculations (such as favoriteMusic state), 
-        //but we only need 5 to physically display on the DashboardDefault component.
-        const [tracksResponse, artistsResponse] = await Promise.all([
-          axios.get('https://api.spotify.com/v1/me/top/tracks', {
-            headers: { 'Authorization': `Bearer ${token}` },
-            params: { limit: 50, time_range: timeRange }
-          }),
-          //we will only need 5 for the 
-          axios.get('https://api.spotify.com/v1/me/top/artists', {
-            headers: { 'Authorization': `Bearer ${token}` },
-            params: { limit: 5, time_range: timeRange }
-          })
-        ]);
+    fetchItems();
+  }, [token, timeRange, itemType]);
 
-        //gets the top 5 tracks and artists
-        setTopTracks(tracksResponse.data.items.slice(0, 5));
-        setTopArtists(artistsResponse.data.items);
-
-        // returns yearCounts used for the calculation of favorite year and decade
-        const yearCounts = tracksResponse.data.items.reduce((acc, track) => {
-          const year = new Date(track.album.release_date).getFullYear();
-          acc[year] = (acc[year] || 0) + 1;
-          return acc;
-        }, {});
-
-
-        const favoriteYear = Object.entries(yearCounts).sort((a, b) => b[1] - a[1])[0][0];
-        const favoriteDecade = Math.floor(favoriteYear / 10) * 10;
-
-        setFavoriteMusic({ year: favoriteYear, decade: favoriteDecade });
-
-        // Get recommendations based off of top 2 artists and tracks from Spotify API
-        const seedArtists = artistsResponse.data.items.slice(0, 2).map(artist => artist.id).join(',');
-        const seedTracks = tracksResponse.data.items.slice(0, 2).map(track => track.id).join(',');
-        const recommendationsResponse = await axios.get('https://api.spotify.com/v1/recommendations', {
+  const fetchItems = async () => {
+    try {
+      let response;
+      if (itemType === 'artists') {
+        response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
           headers: { 'Authorization': `Bearer ${token}` },
-          params: {
-            seed_artists: seedArtists,
-            seed_tracks: seedTracks,
-            limit: 5
-          }
+          params: { time_range: timeRange, limit: 50 }
         });
-        setRecommendations(recommendationsResponse.data.tracks);
-
-        // Calculate favorite genres
-        const genreCounts = artistsResponse.data.items.flatMap(artist => artist.genres)
-          .reduce((acc, genre) => {
-            acc[genre] = (acc[genre] || 0) + 1;
-            return acc;
-          }, {});
-        let favGenres = Object.entries(genreCounts).sort((a, b) => b[1] - a[1]);
-        if(favGenres.length > 9){
-          //If there are more than 9 genres, we will only display the top 9.
-          favGenres = favGenres.slice(0, 9);
-        }
-        setFavoriteGenres(favGenres.map(([genre]) => genre));
-
-        // Find albums from most listened songs
-        const albumCounts = tracksResponse.data.items.reduce((acc, track) => {
-          acc[track.album.id] = (acc[track.album.id] || 0) + 1;
-          return acc;
-        }, {});
-        const mostListenedAlbumId = Object.entries(albumCounts)
-          .sort((a, b) => b[1] - a[1])[0][0];
-        setMostListenedAlbum(tracksResponse.data.items.find(track => track.album.id === mostListenedAlbumId).album);
-
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        setLoading(false);
+      } else if (itemType === 'tracks') {
+        response = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
+          headers: { 'Authorization': `Bearer ${token}` },
+          params: { time_range: timeRange, limit: 50 }
+        });
+      } else if (itemType === 'albums') {
+        const tracksResponse = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
+          headers: { 'Authorization': `Bearer ${token}` },
+          params: { time_range: timeRange, limit: 50 }
+        });
+        const uniqueAlbums = [...new Set(tracksResponse.data.items.map(track => track.album.id))];
+        response = { data: { items: tracksResponse.data.items.filter((track, index) => 
+          uniqueAlbums.indexOf(track.album.id) === index
+        )}};
       }
-    };
-
-    fetchUserData();
-  }, [token, timeRange]);
-
-  // Function to handle preview play/pause
-  const handlePlayPause = (track) => {
-    if (currentlyPlaying === track.id) {
-      audioRef.current.pause();
-      setCurrentlyPlaying(null);
-    } else {
-      if (currentlyPlaying) {
-        audioRef.current.pause();
-      }
-      audioRef.current.src = track.preview_url;
-      audioRef.current.play();
-      setCurrentlyPlaying(track.id);
+      const fetchedItems = response.data.items;
+      setItems(fetchedItems);
+      initializeBracket(fetchedItems);
+    } catch (error) {
+      console.error('Error fetching items:', error);
     }
   };
 
-  // useEffect hook to handle audio playback
-  useEffect(() => {
-    audioRef.current.addEventListener('ended', () => setCurrentlyPlaying(null));
-    return () => {
-      audioRef.current.removeEventListener('ended', () => setCurrentlyPlaying(null));
-      audioRef.current.pause();
-    };
-  }, []);
-
-  //shows loading text
-  if (loading) {
-    return <div className="text-center mt-20 text-xl">Loading your personalized dashboard...</div>;
-  }
- 
-  //used for giving the genres different background colors to add some visual variety into the website
-  const genreColors = [
-    'bg-pink-500',
-    'bg-purple-500',
-    'bg-indigo-500',
-    'bg-blue-500',
-    'bg-teal-500',
-    'bg-green-500',
-    'bg-yellow-500',
-    'bg-orange-500',
-    'bg-red-500'
-  ];
-
-  //shows time range for the music era section
-  const timeRangeText = {
-    short_term: 'This month',
-    medium_term: 'In the last 6 months',
-    long_term: 'In the last year'
+  // Updated to handle variable number of items
+  const initializeBracket = (fetchedItems) => {
+    const bracketSize = getBracketSize(fetchedItems.length);
+    const shuffledItems = fetchedItems.sort(() => 0.5 - Math.random()).slice(0, bracketSize);
+    const initialBracket = [shuffledItems.map(item => [item, null])];
+    setBracket(initialBracket);
+    setCurrentRound(0);
   };
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h3 className="text-2xl font-semibold mb-4 text-blue-400">Your Top Tracks</h3>
-        <ul className="space-y-4">
-          {topTracks.map((track) => (
-            <li key={track.id} className="flex items-center space-x-4">
-              <div className="relative group">
-                <img src={track.album.images[2].url} alt={track.name} className="w-16 h-16 rounded" />
-                {track.preview_url && (
-                  <button
-                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    onClick={() => handlePlayPause(track)}
-                  >
-                    {currentlyPlaying === track.id ? (
-                      <PauseIcon className="h-8 w-8 text-white" />
-                    ) : (
-                      <PlayIcon className="h-8 w-8 text-white" />
-                    )}
-                  </button>
-                )}
-              </div>
-              <div>
-                <span className="font-medium text-lg">{track.name}</span>
-                <p className="text-gray-400">{track.artists[0].name}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+  // Function to determine bracket size
+  const getBracketSize = (itemCount) => {
+    const sizes = [2, 4, 8, 16, 32, 64, 128];
+    return sizes.find(size => size >= itemCount) || 128;
+  };
 
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h3 className="text-2xl font-semibold mb-4 text-green-400">Your Top Artists</h3>
-        <ul className="space-y-4">
-          {topArtists.map((artist, index) => (
-            <li key={artist.id} className="flex items-center space-x-4">
-              <img src={artist.images[2].url} alt={artist.name} className="w-16 h-16 rounded-full" />
-              <span className="font-medium text-lg">{artist.name}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+  const onDragEnd = (result) => {
+    const { source, destination } = result;
+    if (!destination) return;
 
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h3 className="text-2xl font-semibold mb-4 text-purple-400">Recommended Tracks</h3>
-        <ul className="space-y-4">
-          {recommendations.map((track) => (
-            <li key={track.id} className="flex items-center space-x-4">
-              <div className="relative group">
-                <img src={track.album.images[2].url} alt={track.name} className="w-16 h-16 rounded" />
-                {track.preview_url && (
-                  <button
-                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    onClick={() => handlePlayPause(track)}
-                  >
-                    {currentlyPlaying === track.id ? (
-                      <PauseIcon className="h-8 w-8 text-white" />
-                    ) : (
-                      <PlayIcon className="h-8 w-8 text-white" />
-                    )}
-                  </button>
-                )}
-              </div>
-              <div>
-                <span className="font-medium text-lg">{track.name}</span>
-                <p className="text-gray-400">{track.artists[0].name}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+    const newBracket = [...bracket];
+    const sourceMatch = newBracket[currentRound][parseInt(source.droppableId)];
+    const destMatch = newBracket[currentRound][parseInt(destination.droppableId)];
 
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col justify-center items-center">
-        <h3 className="text-2xl font-semibold mb-4 text-yellow-400">Your Favorite Genres</h3>
-        <div className="flex flex-wrap justify-center gap-4">
-          {favoriteGenres.map((genre, index) => (
-            <span key={genre} className={`${genreColors[index]} text-white px-4 py-2 rounded-full text-lg font-medium capitalize`}>
-              {genre}
+    // Swap items if dragging between matches
+    if (source.droppableId !== destination.droppableId) {
+      const temp = sourceMatch[source.index];
+      sourceMatch[source.index] = destMatch[destination.index];
+      destMatch[destination.index] = temp;
+    } else {
+      // Reorder within the same match
+      const [reorderedItem] = sourceMatch.splice(source.index, 1);
+      sourceMatch.splice(destination.index, 0, reorderedItem);
+    }
+
+    setBracket(newBracket);
+  };
+
+  const advanceRound = () => {
+    if (currentRound >= bracket.length - 1) return;
+
+    const nextRound = bracket[currentRound].reduce((acc, match, index) => {
+      if (index % 2 === 0) {
+        acc.push([match[0] || null, bracket[currentRound][index + 1]?.[0] || null]);
+      }
+      return acc;
+    }, []);
+
+    setBracket([...bracket, nextRound]);
+    setCurrentRound(currentRound + 1);
+  };
+
+  // Updated renderItem function to include dynamic font sizing
+  const renderItem = (item, index) => (
+    <Draggable key={item.id} draggableId={item.id} index={index}>
+      {(provided) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          className="relative w-20 h-20 m-1" // Increased size for better visibility
+        >
+          <img
+            src={itemType === 'artists' ? item.images[0]?.url : item.album.images[0]?.url}
+            alt={item.name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white p-1">
+            <span className="text-center break-words" style={{ fontSize: `${Math.max(8, Math.min(14, 100 / item.name.length))}px` }}>
+              {item.name}
             </span>
+          </div>
+        </div>
+      )}
+    </Draggable>
+  );
+
+  return (
+    <div className="max-w-6xl mx-auto p-4">
+      <h2 className="text-2xl font-bold mb-4">Bracket Creator</h2>
+      <select
+        value={itemType}
+        onChange={(e) => setItemType(e.target.value)}
+        className="mb-4 p-2 bg-gray-700 text-white rounded"
+      >
+        <option value="artists">Artists</option>
+        <option value="tracks">Tracks</option>
+        <option value="albums">Albums</option>
+      </select>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <div className="flex flex-wrap justify-center">
+          {bracket[currentRound]?.map((match, matchIndex) => (
+            <Droppable key={matchIndex} droppableId={matchIndex.toString()} direction="vertical">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="bg-gray-700 p-2 m-2 min-h-[180px] w-[120px]"
+                >
+                  <h4 className="text-center mb-2">Match {matchIndex + 1}</h4>
+                  {match.map((item, index) => item && renderItem(item, index))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
           ))}
         </div>
-      </div>
-
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h3 className="text-2xl font-semibold mb-4 text-red-400">Your Favorite Music Era</h3>
-        <div className="space-y-2">
-          <p className="text-lg">
-            {timeRangeText[timeRange]}, you loved music from the <span className="text-yellow-400 font-bold">{favoriteMusic.decade}s</span>!
-          </p>
-          <p className="text-md text-gray-400">
-            Your top tracks were mostly from {favoriteMusic.year}.
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-        <h3 className="text-2xl font-semibold mb-4 text-indigo-400">Most Listened Album</h3>
-        {mostListenedAlbum && (
-          <div className="flex items-center space-x-4">
-            <img src={mostListenedAlbum.images[1].url} alt={mostListenedAlbum.name} className="w-32 h-32 rounded" />
-            <div>
-              <p className="font-medium text-xl">{mostListenedAlbum.name}</p>
-              <p className="text-gray-400 text-lg">{mostListenedAlbum.artists[0].name}</p>
-            </div>
-          </div>
-        )}
-      </div>
+      </DragDropContext>
+      <button
+        onClick={advanceRound}
+        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        disabled={currentRound >= Math.log2(bracket[0]?.length || 1) - 1}
+      >
+        {currentRound >= Math.log2(bracket[0]?.length || 1) - 1 ? 'Tournament Complete' : 'Next Round'}
+      </button>
     </div>
   );
 };

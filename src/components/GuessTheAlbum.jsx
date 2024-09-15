@@ -5,6 +5,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { sanitizeInput } from '../utils/xssProtection';
+
 
 const GuessTheAlbum = ({ token, timeRange }) => {
     const [tracks, setTracks] = useState([]);
@@ -158,7 +160,7 @@ const GuessTheAlbum = ({ token, timeRange }) => {
 
     //resets filteredAlbums
     const handleInputChange = (e) => {
-        const input = e.target.value;
+        const input = sanitizeInput(e.target.value);
         setGuess(input);
         setFilteredAlbums(
             albums.filter(album => 

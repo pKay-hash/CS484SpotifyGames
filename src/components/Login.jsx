@@ -4,6 +4,7 @@ import {React, useState} from 'react';
 import logo from '../assets/logo.png'; // Import the logo (nice)
 import styles from './Login.module.css';
 import Header from './Header';
+import { sanitizeInput } from '../utils/xssProtection';
 
 const clientId = import.meta.env.VITE_CLIENT_ID || '8d028dc7fb1741a5affeae86686969fe';
 const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/';
@@ -12,7 +13,7 @@ const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/
 //to use my localhost as the redirect, as we must be developing locally.
 //${styles['bg-gradient-animation']} -> gradient class 
 //bg-gradient-to-r from-green-400 from-20% via-green-200 via-30% to-emerald-500 to-90% inline-block text-transparent bg-clip-text -> OG gradient (by yours truly)
-const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(clientId)}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user-read-private%20user-read-email%20user-top-read%20user-library-read%20playlist-read-private%20user-read-recently-played`;
+const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(sanitizeInput(clientId))}&response_type=token&redirect_uri=${encodeURIComponent(sanitizeInput(redirectUri))}&scope=user-read-private%20user-read-email%20user-top-read%20user-library-read%20playlist-read-private%20user-read-recently-played`;
 
 const Login = () => {
   const [getStartedClicked, setGetStartedClicked] = useState(false);

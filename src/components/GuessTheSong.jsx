@@ -3,6 +3,8 @@
 // the type of audio (slowed, reversed, or sped up), and then plays the snippet as many times as they want, before choosing their song.
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { sanitizeInput } from '../utils/xssProtection';
+
 
 const GuessTheSong = ({ token, timeRange }) => {
   const [tracks, setTracks] = useState([]);
@@ -102,7 +104,7 @@ const GuessTheSong = ({ token, timeRange }) => {
 
   //updates the filteredTracks array every time the guess input field changes.
   const handleInputChange = (e) => {
-    const input = e.target.value;
+    const input = sanitizeInput(e.target.value);
     setGuess(input);
     setFilteredTracks(
       tracks.filter(track => 
