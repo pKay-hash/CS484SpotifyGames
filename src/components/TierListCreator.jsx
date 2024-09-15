@@ -54,7 +54,6 @@ const TierListCreator = ({ token, timeRange }) => {
         )).values()];
         fetchedItems = uniqueAlbums;
       }
-      console.log('Fetched items:', fetchedItems);
       setItems(fetchedItems);
       resetTiers(fetchedItems);
     } catch (error) {
