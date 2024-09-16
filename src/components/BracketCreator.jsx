@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const BracketCreator = ({ token, timeRange }) => {
   const [items, setItems] = useState([]);
   const [bracket, setBracket] = useState([]);
-  const [currentRound, setCurrentRound] = useState(0);
   const [itemType, setItemType] = useState('artists');
+  const [currentRound, setCurrentRound] = useState(0);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [winner, setWinner] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchItems();
   }, [token, timeRange, itemType]);
 
   const fetchItems = async () => {
+    setError(null);
     try {
       let response;
       if (itemType === 'artists') {
@@ -30,98 +33,140 @@ const BracketCreator = ({ token, timeRange }) => {
           headers: { 'Authorization': `Bearer ${token}` },
           params: { time_range: timeRange, limit: 50 }
         });
-        const uniqueAlbums = [...new Set(tracksResponse.data.items.map(track => track.album.id))];
-        response = { data: { items: tracksResponse.data.items.filter((track, index) => 
-          uniqueAlbums.indexOf(track.album.id) === index
-        )}};
+        const uniqueAlbums = [...new Map(tracksResponse.data.items.map(track => 
+          [track.album.id, { 
+            id: track.album.id, 
+            name: track.album.name, 
+            images: track.album.images,
+            artists: track.album.artists
+          }]
+        )).values()];
+        response = { data: { items: uniqueAlbums } };
       }
       const fetchedItems = response.data.items;
+      console.log('Fetched items:', fetchedItems);
       setItems(fetchedItems);
       initializeBracket(fetchedItems);
     } catch (error) {
       console.error('Error fetching items:', error);
+      setError('Failed to fetch items. Please try again.');
     }
   };
 
-  // Updated to handle variable number of items
-  const initializeBracket = (fetchedItems) => {
-    const bracketSize = getBracketSize(fetchedItems.length);
-    const shuffledItems = fetchedItems.sort(() => 0.5 - Math.random()).slice(0, bracketSize);
-    const initialBracket = [shuffledItems.map(item => [item, null])];
-    setBracket(initialBracket);
-    setCurrentRound(0);
-  };
-
-  // Function to determine bracket size
   const getBracketSize = (itemCount) => {
-    const sizes = [2, 4, 8, 16, 32, 64, 128];
-    return sizes.find(size => size >= itemCount) || 128;
+    const sizes = [4, 8, 16, 32, 64];
+    return sizes.find(size => size >= itemCount) || sizes[sizes.length - 1];
   };
 
-  const onDragEnd = (result) => {
-    const { source, destination } = result;
-    if (!destination) return;
+  const initializeBracket = (fetchedItems) => {
+    const bracketSize = Math.pow(2, Math.floor(Math.log2(fetchedItems.length)));
+    const shuffledItems = fetchedItems.sort(() => 0.5 - Math.random()).slice(0, bracketSize);
+    const rounds = Math.log2(bracketSize);
+    
+    const newBracket = [];
+    for (let i = 0; i < rounds; i++) {
+      if (i === 0) {
+        newBracket.push(shuffledItems);
+      } else {
+        const roundSize = bracketSize / Math.pow(2, i);
+        newBracket.push(Array(roundSize).fill(null));
+      }
+    }
+
+    console.log('Initialized bracket:', newBracket);
+    setBracket(newBracket);
+    setCurrentRound(0);
+    setCurrentMatchIndex(0);
+    setWinner(null);
+  };
+
+  const getItemImage = (item) => {
+    if (!item) return '';
+    if (itemType === 'artists') {
+      return item.images[0]?.url;
+    } else if (itemType === 'tracks') {
+      return item.album.images[0]?.url;
+    } else if (itemType === 'albums') {
+      return item.images[0]?.url;
+    }
+    return '';
+  };
+
+  const handleSelection = (roundIndex, matchIndex, selectedIndex) => {
+    if (roundIndex !== currentRound || matchIndex !== currentMatchIndex) return;
 
     const newBracket = [...bracket];
-    const sourceMatch = newBracket[currentRound][parseInt(source.droppableId)];
-    const destMatch = newBracket[currentRound][parseInt(destination.droppableId)];
+    const winner = newBracket[roundIndex][matchIndex * 2 + selectedIndex];
 
-    // Swap items if dragging between matches
-    if (source.droppableId !== destination.droppableId) {
-      const temp = sourceMatch[source.index];
-      sourceMatch[source.index] = destMatch[destination.index];
-      destMatch[destination.index] = temp;
-    } else {
-      // Reorder within the same match
-      const [reorderedItem] = sourceMatch.splice(source.index, 1);
-      sourceMatch.splice(destination.index, 0, reorderedItem);
+    if (roundIndex === bracket.length - 1) {
+      // Final round
+      setWinner(winner);
+      return;
     }
 
+    newBracket[roundIndex + 1][matchIndex] = winner;
     setBracket(newBracket);
-  };
 
-  const advanceRound = () => {
-    if (currentRound >= bracket.length - 1) return;
-
-    const nextRound = bracket[currentRound].reduce((acc, match, index) => {
-      if (index % 2 === 0) {
-        acc.push([match[0] || null, bracket[currentRound][index + 1]?.[0] || null]);
+    // Move to the next match or round
+    if (matchIndex < Math.floor(newBracket[roundIndex].length / 2) - 1) {
+      setCurrentMatchIndex(currentMatchIndex + 1);
+    } else {
+      // Check if this round is complete
+      const isRoundComplete = newBracket[roundIndex + 1].every((item, index) => item !== null || index >= Math.floor(newBracket[roundIndex].length / 2));
+      if (isRoundComplete) {
+        setCurrentRound(currentRound + 1);
+        setCurrentMatchIndex(0);
       }
-      return acc;
-    }, []);
-
-    setBracket([...bracket, nextRound]);
-    setCurrentRound(currentRound + 1);
+    }
   };
 
-  // Updated renderItem function to include dynamic font sizing
-  const renderItem = (item, index) => (
-    <Draggable key={item.id} draggableId={item.id} index={index}>
-      {(provided) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          className="relative w-20 h-20 m-1" // Increased size for better visibility
-        >
-          <img
-            src={itemType === 'artists' ? item.images[0]?.url : item.album.images[0]?.url}
-            alt={item.name}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white p-1">
-            <span className="text-center break-words" style={{ fontSize: `${Math.max(8, Math.min(14, 100 / item.name.length))}px` }}>
-              {item.name}
-            </span>
+  const renderBracketItem = (item, roundIndex, matchIndex, itemIndex) => {
+    if (!item) return <div className="bg-gray-700 rounded m-1 p-2 h-16 w-32">Empty</div>;
+
+    const isActive = roundIndex === currentRound && matchIndex === currentMatchIndex;
+    const isSelected = roundIndex < currentRound || (roundIndex === currentRound && matchIndex < currentMatchIndex);
+
+    return (
+      <div 
+        className={`rounded m-1 p-2 flex items-center overflow-hidden h-16 w-32 cursor-pointer
+                    ${isActive ? 'bg-blue-600 hover:bg-blue-500' : 
+                      isSelected ? 'bg-green-600' : 'bg-gray-600'}`}
+        onClick={() => isActive && handleSelection(roundIndex, matchIndex, itemIndex)}
+      >
+        <img src={getItemImage(item)} alt={item.name} className="w-12 h-12 object-cover rounded mr-2" />
+        <span className="text-xs text-white truncate">{item.name}</span>
+      </div>
+    );
+  };
+
+  const renderBracket = () => {
+    if (bracket.length === 0) return <div className="text-white">Loading bracket...</div>;
+
+    return (
+      <div className="flex justify-center">
+        {bracket.map((round, roundIndex) => (
+          <div key={roundIndex} className="flex flex-col justify-around m-2">
+            <h3 className="text-white mb-2 text-center">Round {roundIndex + 1}</h3>
+            {Array(Math.ceil(round.length / 2)).fill().map((_, matchIndex) => (
+              <div key={matchIndex} className="mb-4 flex flex-col items-center">
+                {renderBracketItem(round[matchIndex * 2], roundIndex, matchIndex, 0)}
+                <div className="text-white my-1">vs</div>
+                {renderBracketItem(round[matchIndex * 2 + 1], roundIndex, matchIndex, 1)}
+              </div>
+            ))}
           </div>
-        </div>
-      )}
-    </Draggable>
-  );
+        ))}
+      </div>
+    );
+  };
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Bracket Creator</h2>
+    <div className="max-w-full mx-auto p-4 bg-gray-900">
+      <h2 className="text-2xl font-bold mb-4 text-white">Bracket Creator</h2>
       <select
         value={itemType}
         onChange={(e) => setItemType(e.target.value)}
@@ -131,32 +176,16 @@ const BracketCreator = ({ token, timeRange }) => {
         <option value="tracks">Tracks</option>
         <option value="albums">Albums</option>
       </select>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="flex flex-wrap justify-center">
-          {bracket[currentRound]?.map((match, matchIndex) => (
-            <Droppable key={matchIndex} droppableId={matchIndex.toString()} direction="vertical">
-              {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  className="bg-gray-700 p-2 m-2 min-h-[180px] w-[120px]"
-                >
-                  <h4 className="text-center mb-2">Match {matchIndex + 1}</h4>
-                  {match.map((item, index) => item && renderItem(item, index))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          ))}
+      {renderBracket()}
+      {winner && (
+        <div className="mt-8 text-center text-white">
+          <h3 className="text-xl font-bold mb-2">Winner</h3>
+          <div className="flex items-center justify-center">
+            <img src={getItemImage(winner)} alt={winner.name} className="w-24 h-24 object-cover rounded mr-4" />
+            <span className="text-lg">{winner.name}</span>
+          </div>
         </div>
-      </DragDropContext>
-      <button
-        onClick={advanceRound}
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        disabled={currentRound >= Math.log2(bracket[0]?.length || 1) - 1}
-      >
-        {currentRound >= Math.log2(bracket[0]?.length || 1) - 1 ? 'Tournament Complete' : 'Next Round'}
-      </button>
+      )}
     </div>
   );
 };
