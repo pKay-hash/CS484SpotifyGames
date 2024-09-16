@@ -4,14 +4,11 @@ import {React, useState} from 'react';
 import logo from '../assets/logo.png'; // Import the logo (nice)
 import styles from './Login.module.css';
 import Header from './Header';
-<<<<<<< HEAD
 import { sanitizeInput } from '../utils/xssProtection';
-=======
 import drake from '../assets/drake.png';
 import cole from '../assets/coleworld.png';
 import kdot from '../assets/Kendrick-Lamar.png';
 
->>>>>>> SyedM
 
 const clientId = import.meta.env.VITE_CLIENT_ID || '8d028dc7fb1741a5affeae86686969fe';
 const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/';
