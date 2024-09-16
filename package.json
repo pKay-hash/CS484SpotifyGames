@@ -14,7 +14,10 @@
     "@heroicons/react": "^1.0.6",
     "axios": "^1.7.7",
     "dompurify": "^3.1.6",
+<<<<<<< HEAD
     "lucide-react": "^0.441.0",
+=======
+>>>>>>> SyedM
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.3.1",
