@@ -2,7 +2,6 @@
 // of every song (that has a preview available) of a random album (pooled from the albums of their top 50 tracks),
 // played at the same time, and they must guess the name of the album. 
 
-
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { sanitizeInput } from '../utils/xssProtection';

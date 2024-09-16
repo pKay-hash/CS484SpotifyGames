@@ -1,3 +1,6 @@
+//DashboardTopBar is the section on the top of the page, just below the top of the App.jsx, that shows user information (such as name and profile picture)
+//and allows the user to select the time range for their games, and the specific game they are on.
+
 import React from 'react';
 import { Clock, Music } from 'lucide-react';
 
