@@ -14,6 +14,8 @@ const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/
 //the line below, provided by Spotify, specifies the clientID (that I made for the app), and specifies my redirect_URI.
 //redirect_URI and client_id are both environment variables in CloudFlare, so I say to use that if it is available, otherwise,
 //to use my localhost as the redirect, as we must be developing locally.
+
+// prev styles clipboard
 //${styles['bg-gradient-animation']} -> gradient class 
 //bg-gradient-to-r from-green-400 from-20% via-green-200 via-30% to-emerald-500 to-90% inline-block text-transparent bg-clip-text -> OG gradient (by yours truly)
 const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(clientId)}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user-read-private%20user-read-email%20user-top-read%20user-library-read%20playlist-read-private%20user-read-recently-played`;
