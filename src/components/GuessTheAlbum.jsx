@@ -4,7 +4,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 import { sanitizeInput } from '../utils/xssProtection';
+import { PlayIcon, PauseIcon, ChevronRightIcon } from '@heroicons/react/solid';
 
 
 const GuessTheAlbum = ({ token, timeRange }) => {
@@ -15,6 +17,8 @@ const GuessTheAlbum = ({ token, timeRange }) => {
     const [feedback, setFeedback] = useState('');
     const [isPlaying, setIsPlaying] = useState(false);
     const [filteredAlbums, setFilteredAlbums] = useState([]);
+    const [gameStage, setGameStage] = useState('ready');
+    const [score, setScore] = useState(0);
     const audioContext = useRef(null);
 
     // whenever timeRange or token changes, fetch new tracks and process into albums
@@ -71,6 +75,7 @@ const GuessTheAlbum = ({ token, timeRange }) => {
         setFeedback('');
         setIsPlaying(false);
         setFilteredAlbums([]);
+        setGameStage('ready');
         if (audioContext.current) {
             audioContext.current.close();
         }
@@ -106,6 +111,7 @@ const GuessTheAlbum = ({ token, timeRange }) => {
             setTimeout(() => {
                 source.stop();
                 setIsPlaying(false);
+                setGameStage('guessing');
             }, 2000);//plays for 2 seconds
         } else {
             setFeedback("Sorry, no previews available for this album. Let's try another!");
@@ -151,10 +157,13 @@ const GuessTheAlbum = ({ token, timeRange }) => {
     const handleGuess = () => {
         if (guess.toLowerCase() === currentAlbum.name.toLowerCase()) {
             setFeedback('Correct! Well done!');
+            setScore(score + 1);
         } else {
             setFeedback(`Sorry, the correct answer was "${currentAlbum.name}".`);
+            setScore(0);
         }
         setFilteredAlbums([]);
+        setGameStage('result');
     };
 
     //resets filteredAlbums
@@ -175,65 +184,152 @@ const GuessTheAlbum = ({ token, timeRange }) => {
         setFilteredAlbums([]);
     };
 
-    return (
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
-            <h2 className="text-2xl font-bold mb-4 text-center text-white">Guess The Album</h2>
-            <div className="mb-4 flex justify-center">
-                <button 
-                    onClick={playSnippet} 
-                    disabled={isPlaying}
-                    className="px-4 py-2 bg-green-600 rounded hover:bg-green-700 disabled:bg-gray-400"
+    const fadeInOut = {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+        transition: { duration: 0.3 }
+    };
+
+    const slideInOut = {
+        initial: { x: 20, opacity: 0 },
+        animate: { x: 0, opacity: 1 },
+        exit: { x: -20, opacity: 0 },
+        transition: { duration: 0.3 }
+    };
+
+    const renderReady = () => (
+        <motion.div {...fadeInOut} className="space-y-6">
+            <motion.p {...slideInOut} className="text-center text-lg text-white">
+                Ready to guess the album? Click play to hear a 2-second snippet!
+            </motion.p>
+            <motion.div className="flex justify-center">
+            <motion.button 
+                onClick={() => {setGameStage('guessing'); playSnippet();}}
+                className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+            >
+                Start Guessing!
+            </motion.button>
+            </motion.div>
+        </motion.div>
+    );
+
+    const renderGuessing = () => (
+        <motion.div {...fadeInOut} className="space-y-6">
+            <motion.div {...slideInOut} className="flex justify-center">
+                <motion.button 
+                onClick={playSnippet} 
+                disabled={isPlaying}
+                className={`px-8 py-4 rounded-full text-xl font-semibold ${isPlaying ? 'bg-gray-500' : 'bg-green-500 hover:bg-green-600'} text-white transition duration-300 flex items-center`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 >
-                    {isPlaying ? 'Playing...' : 'Play Snippet'}
-                </button>
-            </div>
-            <div className="mb-4">
+                {isPlaying ? <PauseIcon className="h-6 w-6 mr-2" /> : <PlayIcon className="h-6 w-6 mr-2" />}
+                {isPlaying ? 'Playing...' : 'Play Snippet'}
+                </motion.button>
+            </motion.div>
+            <motion.div {...slideInOut} className="mb-4">
                 <input 
                     type="text" 
                     value={guess} 
                     onChange={handleInputChange}
                     placeholder="Type your guess here..."
-                    className="w-full px-3 py-2 bg-gray-700 rounded text-white"
+                    className="w-full px-4 py-2 bg-gray-700 rounded-lg text-white"
                 />
-                {filteredAlbums.length > 0 && (
-                    <ul className="mt-1 bg-gray-700 rounded">
-                        {filteredAlbums.map(album => (
-                            <li 
-                                key={album.id} 
-                                onClick={() => handleAlbumSelection(album)}
-                                className="px-3 py-2 hover:bg-gray-600 cursor-pointer flex items-center justify-between"
-                            >
-                                <div className="flex flex-col">
-                                    <span className="text-white">{album.name}</span>
-                                    <span className="text-gray-400 text-sm">{album.artists[0].name}</span>
-                                </div>
-                                <img src={album.images[2].url} alt={album.name} className="w-12 h-12 rounded" />
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
-            <div className="mb-4 flex justify-center">
-                <button 
+                <AnimatePresence>
+                    {filteredAlbums.length > 0 && (
+                        <motion.ul 
+                            className="mt-1 bg-gray-700 rounded-lg"
+                            initial={{ y: -10, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -10, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            {filteredAlbums.map(album => (
+                                <motion.li 
+                                    key={album.id} 
+                                    onClick={() => handleAlbumSelection(album)}
+                                    className="px-4 py-2 hover:bg-gray-600 cursor-pointer flex items-center justify-between"
+                                    whileHover={{ backgroundColor: "rgba(75, 85, 99, 1)" }}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-white">{album.name}</span>
+                                        <span className="text-gray-400 text-sm">{album.artists[0].name}</span>
+                                    </div>
+                                    <img src={album.images[2].url} alt={album.name} className="w-12 h-12 rounded" />
+                                </motion.li>
+                            ))}
+                        </motion.ul>
+                    )}
+                </AnimatePresence>
+            </motion.div>
+            <motion.div className="flex justify-center">
+                <motion.button 
                     onClick={handleGuess}
-                    className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
+                    className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                 >
                     Submit Guess
-                </button>
-            </div>
-            {feedback && (
-                <div className="text-center text-lg font-semibold">
-                    {feedback}
-                </div>
-            )}
-            <div className="mt-4 text-center">
-                <button 
-                    onClick={() => selectRandomAlbum(albums)}
-                    className="px-4 py-2 bg-purple-600 rounded hover:bg-purple-700"
-                >
-                    Next Album
-                </button>
-            </div>
+                </motion.button>
+            </motion.div>
+        </motion.div>
+    );
+
+    const renderResult = () => (
+        <motion.div {...fadeInOut} className="space-y-6 text-center">
+            <motion.div 
+                className={`text-2xl font-bold ${feedback.includes('Correct') ? 'text-green-400' : 'text-red-400'}`}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+            >
+                {feedback}
+            </motion.div>
+            <motion.div 
+                className="text-xl text-white"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+            >
+                Current Score: <span className="font-bold text-blue-400">{score}</span>
+            </motion.div>
+            <motion.button 
+                onClick={() => selectRandomAlbum(albums)}
+                className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition duration-300 flex items-center justify-center mx-auto"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+            >
+                Next Album <ChevronRightIcon className="h-5 w-5 ml-2" />
+            </motion.button>
+        </motion.div>
+    );
+
+    return (
+        <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
+            <motion.h2 
+                className="text-3xl font-bold mb-6 text-center text-white"
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+            >
+                Guess The Album
+            </motion.h2>
+            <motion.div 
+                className="mb-4 text-center text-xl text-blue-300"
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+            >
+                Current Score: {score}
+            </motion.div>
+            <AnimatePresence mode="wait">
+                {gameStage === 'ready' && renderReady()}
+                {gameStage === 'guessing' && renderGuessing()}
+                {gameStage === 'result' && renderResult()}
+            </AnimatePresence>
         </div>
     );
 };

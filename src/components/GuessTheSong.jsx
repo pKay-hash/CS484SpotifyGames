@@ -3,7 +3,7 @@
 // the type of audio (slowed, reversed, or sped up), and then plays the snippet as many times as they want, before choosing their song.
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'; //used for all animations of simple things
 import { sanitizeInput } from '../utils/xssProtection';
 import { PlayIcon, PauseIcon, ChevronRightIcon } from '@heroicons/react/solid';
 
@@ -125,120 +125,184 @@ const GuessTheSong = ({ token, timeRange }) => {
     setFilteredTracks([]); // Clear filtered tracks when a track is selected
   };
 
+  const fadeInOut = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.3 }
+  };
+
+  const slideInOut = {
+    initial: { x: 20, opacity: 0 },
+    animate: { x: 0, opacity: 1 },
+    exit: { x: -20, opacity: 0 },
+    transition: { duration: 0.3 }
+  };
+
   const renderSettings = () => (
-    <div className="space-y-6">
-      <div className="bg-gray-700 p-4 rounded-lg">
+    <motion.div {...fadeInOut} className="space-y-6">
+      <motion.div {...slideInOut} className="bg-gray-700 p-4 rounded-lg">
         <h3 className="text-xl font-semibold mb-3 text-white">Snippet Length</h3>
         <div className="flex justify-between">
           {[125, 250, 500, 1000].map((length) => (
-            <button 
+            <motion.button 
               key={length}
               onClick={() => setSnippetLength(length)}
               className={`px-4 py-2 rounded-full ${snippetLength === length ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-200'} hover:bg-green-400 transition duration-300`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               {length === 1000 ? '1 sec' : `${length/1000} sec`}
-            </button>
+            </motion.button>
           ))}
         </div>
-      </div>
-      <div className="bg-gray-700 p-4 rounded-lg">
+      </motion.div>
+      <motion.div {...slideInOut} className="bg-gray-700 p-4 rounded-lg">
         <h3 className="text-xl font-semibold mb-3 text-white">Audio Type</h3>
         <div className="flex justify-between">
           {['normal', 'slowed', 'sped', 'reversed'].map((type) => (
-            <button 
+            <motion.button 
               key={type}
               onClick={() => setAudioType(type)}
               className={`px-4 py-2 rounded-full capitalize ${audioType === type ? 'bg-purple-500 text-white' : 'bg-gray-600 text-gray-200'} hover:bg-purple-400 transition duration-300`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               {type}
-            </button>
+            </motion.button>
           ))}
         </div>
-      </div>
-      <button 
+      </motion.div>
+      <motion.button 
         onClick={() => setGameStage('playing')}
         className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
         Start Guessing!
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 
   const renderPlaying = () => (
-    <div className="space-y-6">
-      <div className="flex justify-center">
-        <button 
+    <motion.div {...fadeInOut} className="space-y-6">
+      <motion.div {...slideInOut} className="flex justify-center">
+        <motion.button 
           onClick={playSnippet} 
           disabled={isPlaying}
           className={`px-8 py-4 rounded-full text-xl font-semibold ${isPlaying ? 'bg-gray-500' : 'bg-green-500 hover:bg-green-600'} text-white transition duration-300 flex items-center`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           {isPlaying ? <PauseIcon className="h-6 w-6 mr-2" /> : <PlayIcon className="h-6 w-6 mr-2" />}
           {isPlaying ? 'Playing...' : 'Play Snippet'}
-        </button>
-      </div>
-      {gameStage === 'guessing' && (
-        <div className="space-y-4">
-          <input 
-            type="text" 
-            value={guess} 
-            onChange={handleInputChange}
-            placeholder="Type your guess here..."
-            className="w-full px-4 py-2 bg-gray-700 rounded-lg text-white"
-          />
-          {filteredTracks.length > 0 && (
-            <ul className="bg-gray-700 rounded-lg">
-              {filteredTracks.map(track => (
-                <li 
-                  key={track.id} 
-                  onClick={() => handleTrackSelection(track)}
-                  className="px-4 py-2 hover:bg-gray-600 cursor-pointer flex items-center justify-between"
+        </motion.button>
+      </motion.div>
+      <AnimatePresence>
+        {gameStage === 'guessing' && (
+          <motion.div {...slideInOut} className="space-y-4">
+            <motion.input 
+              type="text" 
+              value={guess} 
+              onChange={handleInputChange}
+              placeholder="Type your guess here..."
+              className="w-full px-4 py-2 bg-gray-700 rounded-lg text-white"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            />
+            <AnimatePresence>
+              {filteredTracks.length > 0 && (
+                <motion.ul 
+                  className="bg-gray-700 rounded-lg"
+                  initial={{ y: -10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -10, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  <div className="flex flex-col">
-                    <span className="text-white">{track.name}</span>
-                    <span className="text-gray-400 text-sm">{track.artists[0].name}</span>
-                  </div>
-                  <img src={track.album.images[2].url} alt={track.album.name} className="w-12 h-12 rounded" />
-                </li>
-              ))}
-            </ul>
-          )}
-          <button 
-            onClick={handleGuess}
-            className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
-          >
-            Submit Guess
-          </button>
-        </div>
-      )}
-    </div>
+                  {filteredTracks.map(track => (
+                    <motion.li 
+                      key={track.id} 
+                      onClick={() => handleTrackSelection(track)}
+                      className="px-4 py-2 hover:bg-gray-600 cursor-pointer flex items-center justify-between"
+                      whileHover={{ backgroundColor: "rgba(75, 85, 99, 1)" }}
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-white">{track.name}</span>
+                        <span className="text-gray-400 text-sm">{track.artists[0].name}</span>
+                      </div>
+                      <img src={track.album.images[2].url} alt={track.album.name} className="w-12 h-12 rounded" />
+                    </motion.li>
+                  ))}
+                </motion.ul>
+              )}
+            </AnimatePresence>
+            <motion.button 
+              onClick={handleGuess}
+              className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Submit Guess
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 
   const renderResult = () => (
-    <div className="space-y-6 text-center">
-      <div className={`text-2xl font-bold ${feedback.includes('Correct') ? 'text-green-400' : 'text-red-400'}`}>
+    <motion.div {...fadeInOut} className="space-y-6 text-center">
+      <motion.div 
+        className={`text-2xl font-bold ${feedback.includes('Correct') ? 'text-green-400' : 'text-red-400'}`}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
         {feedback}
-      </div>
-      <div className="text-xl">
+      </motion.div>
+      <motion.div 
+        className="text-xl"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
         Current Score: <span className="font-bold text-blue-400">{score}</span>
-      </div>
-      <button 
+      </motion.div>
+      <motion.button 
         onClick={() => selectRandomTrack(tracks)}
         className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition duration-300 flex items-center justify-center mx-auto"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
       >
         Next Song <ChevronRightIcon className="h-5 w-5 ml-2" />
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 
   return (
     <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6 text-center text-white">Guess The Song</h2>
-      <div className="mb-4 text-center text-xl text-blue-300">
+      <motion.h2 
+        className="text-3xl font-bold mb-6 text-center text-white"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        Guess The Song
+      </motion.h2>
+      <motion.div 
+        className="mb-4 text-center text-xl text-blue-300"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
         Current Score: {score}
-      </div>
-      {gameStage === 'settings' && renderSettings()}
-      {(gameStage === 'playing' || gameStage === 'guessing') && renderPlaying()}
-      {gameStage === 'result' && renderResult()}
+      </motion.div>
+      <AnimatePresence mode="wait">
+        {gameStage === 'settings' && renderSettings()}
+        {(gameStage === 'playing' || gameStage === 'guessing') && renderPlaying()}
+        {gameStage === 'result' && renderResult()}
+      </AnimatePresence>
     </div>
   );
 };
