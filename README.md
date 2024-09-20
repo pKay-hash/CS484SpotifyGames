@@ -2,11 +2,11 @@
 A website that allows users to play a multitude of personalized games and activities that change according to the user's Spotify data (such as their favorite songs, artists, albums, etc).   
 
 ## **Games/Activities include:**   
-Guess The Song
-Higher Or Lower
-Guess The Album
-Bracket Creator
-Tier List Creator
+Guess The Song   
+Higher Or Lower   
+Guess The Album   
+Bracket Creator   
+Tier List Creator   
 
 
 ## How to run:
