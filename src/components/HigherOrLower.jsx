@@ -120,7 +120,7 @@ const HigherOrLower = ({ token, timeRange }) => {
         animate={{ x: 0, y: 50, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <h3 className="text-xl font-bold text-white mb-2">Lower</h3>
+        <h3 className="text-xl font-bold text-white mb-2">Lower?</h3>
       </motion.div>
     </div>
   );
