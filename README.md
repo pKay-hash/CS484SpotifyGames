@@ -19,7 +19,8 @@ npm install @heroicons/react@v1
 npm install dompurify   
 npm install lucide-react   
 )
-npm run dev   
+npm install -g wrangler
+npx wrangler pages dev -- npm run dev
   
 ## Prod-branch* available at **cs484spotifygames.pages.dev**
 

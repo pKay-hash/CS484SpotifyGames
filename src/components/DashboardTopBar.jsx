@@ -45,6 +45,7 @@ const DashboardTopBar = ({ user, timeRange, onTimeRangeChange, onGameSelect }) =
               <option value="guessTheAlbum">Guess the Album</option>
               <option value="tierListCreator">Tier List Creator</option>
               <option value="bracketCreator">Bracket Creator</option>
+              <option value="guessTheLyric">Guess The Lyric</option>
             </select>
           </div>
         </div>

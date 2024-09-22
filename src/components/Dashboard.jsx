@@ -8,6 +8,7 @@ import GuessTheAlbum from './GuessTheAlbum';
 import TierListCreator from './TierListCreator';
 import BracketCreator from './BracketCreator';
 import DashboardTopBar from './DashboardTopBar';
+import GuessTheLyric from './GuessTheLyric';
 import { sanitizeInput } from '../utils/xssProtection';
 
 
@@ -60,6 +61,8 @@ const Dashboard = ({ token, onLogout, resetDashboard, setResetDashboard }) => {
         return <TierListCreator token={token} timeRange={timeRange} />;
       case 'bracketCreator':
         return <BracketCreator token={token} timeRange={timeRange} />;
+      case 'guessTheLyric':
+        return <GuessTheLyric token={token} timeRange={timeRange}/>
       default:
         return <DashboardDefault token={token} timeRange={timeRange} />;
     }
