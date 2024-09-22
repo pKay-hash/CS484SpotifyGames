@@ -9,6 +9,10 @@ import drake from '../assets/drake.png';
 import cole from '../assets/coleworld.png';
 import kdot from '../assets/Kendrick-Lamar.png';
 
+/* Component imports */
+
+import {Card, CaardBody, Typography, CardBody} from "@material-tailwind/react";
+
 
 const clientId = import.meta.env.VITE_CLIENT_ID || '8d028dc7fb1741a5affeae86686969fe';
 const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/';
@@ -66,8 +70,23 @@ const Login = () => {
         </div> */}
       </div>
       
-      
-      
+      <div className="cards flex flex-row">
+        <Card className="w-96 bg-zinc-700 mt-6 mr-8 ml-12 border-double border-4 border-slate-50 rounded-md">
+          <CardBody>
+            <Typography variant='h4' color='blue-gray' className='font-oswald text-slate-50'>Get access to data</Typography>
+          </CardBody>
+        </Card>
+        <Card className="w-96 bg-zinc-700 mt-6 mr-8 border-double border-4 border-slate-50 rounded-md">
+          <CardBody>
+            <Typography variant='h4' color='blue-gray' className='font-oswald text-slate-50'>Enjoy curated games</Typography>
+          </CardBody>
+        </Card>
+        <Card className="w-96 bg-zinc-700 mt-6 mr-8 border-double border-4 border-slate-50 rounded-md">
+          <CardBody>
+            <Typography variant='h4' color='blue-gray' className='font-oswald text-slate-50'>Evolve your music taste</Typography>
+          </CardBody>
+        </Card>
+      </div>
       
       <div className="absolute bottom-4 text-center w-full">
         <p className="text-xs text-gray-500 max-w-md mx-auto">
