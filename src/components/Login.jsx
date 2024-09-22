@@ -22,7 +22,7 @@ const redirectUri = import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173/
 const AUTH_URL = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(sanitizeInput(clientId))}&response_type=token&redirect_uri=${encodeURIComponent(sanitizeInput(redirectUri))}&scope=user-read-private%20user-read-email%20user-top-read%20user-library-read%20playlist-read-private%20user-read-recently-played`;
 
 const Login = () => {
-  const [getStartedClicked, setGetStartedClicked] = useState(false);
+  const [getStarted, setGetStarted] = useState(false);
   return (
     <div className={`min-h-screen flex flex-col content-center bg-gradient-to-r from-stone-900 to-zinc-800`}>
       {/* <img src={logo} alt="Games On The Spot Logo" className="w-8 h-8 ml-20 justify-self-start" /> */}
@@ -59,11 +59,11 @@ const Login = () => {
           
         </div>
         </div>
-        <div className="pictures ml-[-20em]">
+        {/* <div className="pictures ml-[-20em]">
           <img src={cole} className='w-72 h-72 absolute top-10 left-190 transform origin-top-left translate-x-60 translate-y-0  opacity-80 animate-animateCole'></img>
           <img src={kdot} className='w-84 h-72 absolute top-32 left-160 transform origin-top-left translate-x-20 translate-y-10  opacity-80 animate-animateKdot'></img>
           <img src={drake} className='w-84 h-84 absolute top-60 left-120 transform origin-top-left translate-x-[-10] translate-y-40  opacity-80 animate-animateDrake'></img>
-        </div>
+        </div> */}
       </div>
       
       
