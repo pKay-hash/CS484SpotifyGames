@@ -18,6 +18,7 @@ npm install -D tailwindcss postcss autoprefixer
 npm install @heroicons/react@v1   
 npm install dompurify   
 npm install lucide-react   
+npm install @material-tailwind/react
 )
 npm run dev   
   
