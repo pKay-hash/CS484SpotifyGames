@@ -53,9 +53,36 @@ const App = () => {
               <h1 onClick={handleTitleClick} className="font-teko font-semibold text-4xl bg-gradient-to-r from-green-400 from-20% via-green-200 via-30% to-emerald-500 to-90% inline-block text-transparent bg-clip-text cursor-pointer hover:opacity-80 transition-opacity duration-300">
                   Games On The Spot
               </h1>
-              <button 
+              {/* <button 
                 className="px-4 py-2 bg-gray-700 text-white rounded-full border border-transparent hover:bg-gray-600 hover:text-gray-300 hover:border-blue-400 transition duration-300"
                 onClick={logout}>
+                Logout
+              </button> */}
+              <button 
+                className="
+                  px-5 
+                  py-2.5 
+                  bg-gray-800 
+                  text-white 
+                  rounded-lg 
+                  font-semibold 
+                  border 
+                  border-gray-700 
+                  hover:bg-red-600 
+                  hover:text-white 
+                  hover:border-red-700 
+                  transition-all 
+                  duration-300 
+                  transform 
+                  hover:-translate-y-1 
+                  hover:shadow-lg 
+                  focus:outline-none 
+                  focus:ring-2 
+                  focus:ring-red-500 
+                  focus:ring-opacity-50
+                "
+                onClick={logout}
+              >
                 Logout
               </button>
             </div>

@@ -61,7 +61,7 @@ const Dashboard = ({ token, onLogout, resetDashboard, setResetDashboard }) => {
       case 'bracketCreator':
         return <BracketCreator token={token} timeRange={timeRange} />;
       default:
-        return <DashboardDefault token={token} timeRange={timeRange} />;
+        return <DashboardDefault token={token} timeRange={timeRange} onGameSelect = {setCurrentGame} />;
     }
   };
 
