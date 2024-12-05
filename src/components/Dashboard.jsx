@@ -53,9 +53,11 @@ const Dashboard = ({ token, onLogout, resetDashboard, setResetDashboard }) => {
       case 'higherOrLower':
         return <HigherOrLower token={token} timeRange={timeRange} />;
       case 'guessTheSong':
-        return <GuessTheSong token={token} timeRange={timeRange} />;
+        // return <GuessTheSong token={token} timeRange={timeRange} />;
+        return <DashboardDefault token={token} timeRange={timeRange} onGameSelect = {setCurrentGame} />;
       case 'guessTheAlbum':
-        return <GuessTheAlbum token={token} timeRange={timeRange} />;
+        // return <GuessTheAlbum token={token} timeRange={timeRange} />;
+        return <DashboardDefault token={token} timeRange={timeRange} onGameSelect = {setCurrentGame} />;
       case 'tierListCreator':
         return <TierListCreator token={token} timeRange={timeRange} />;
       case 'bracketCreator':
